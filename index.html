@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
+<meta name="theme-color" content="#010102" />
+<meta name="description" content="Offline HDD (Horizontal Directional Drilling) crossing profile geometry calculator — segment lengths, depths, node coordinates and feasibility." />
+<title>HDD Profile Studio</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icons/LOGO.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="HDD Profile" />
+<style>
+  /* ============ Design tokens — dark (default) ============ */
+  :root{
+    --primary:#5e6ad2; --primary-hover:#828fff; --primary-focus:#5e69d1;
+    --on-primary:#ffffff;
+    --ink:#f7f8f8; --ink-muted:#d0d6e0; --ink-subtle:#8a8f98; --ink-tertiary:#62666d;
+    --canvas:#010102; --s1:#0f1011; --s2:#141516; --s3:#18191a; --s4:#191a1b;
+    --hair:#23252a; --hair-strong:#34343a; --hair-tert:#3e3e44;
+    --success:#27a644; --success-bg:#0e1f13; --success-text:#7fe0a0; --success-border:#1f5233;
+    --danger:#eb5757;  --danger-bg:#241012;  --danger-text:#f6a2a2;  --danger-border:#5a2226;
+    --warn:#f2994a;    --warn-bg:#241a0f;    --warn-text:#f7b975;    --warn-border:#5a3a1f;
+    --surface-shadow: none;
+    --scrim: rgba(1,1,2,0.82); --scrim-strong: rgba(1,1,2,0.9);
+    --focus-ring: rgba(94,105,210,0.28); --err-ring: rgba(235,87,87,0.22);
+    --earth-tint: rgba(94,105,210,0.05);
+    --r-xs:4px; --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-pill:9999px;
+    --sp-xxs:4px; --sp-xs:8px; --sp-sm:12px; --sp-md:16px; --sp-lg:24px; --sp-xl:32px;
+    --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Inter,system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+    --maxw:720px;
+  }
+  /* ============ Design tokens — light ============ */
+  :root[data-theme="light"]{
+    --primary:#5e6ad2; --primary-hover:#4b57c4; --primary-focus:#4b57c4;
+    --on-primary:#ffffff;
+    --ink:#15161a; --ink-muted:#4b4f58; --ink-subtle:#71767f; --ink-tertiary:#9a9ea6;
+    --canvas:#f4f5f7; --s1:#ffffff; --s2:#f1f2f5; --s3:#e9eaee; --s4:#e3e5ea;
+    --hair:#e2e4e9; --hair-strong:#d0d3da; --hair-tert:#c3c6ce;
+    --success:#1c8a3c; --success-bg:#e9f7ee; --success-text:#177a34; --success-border:#bfe6cc;
+    --danger:#d64545;  --danger-bg:#fdecec;  --danger-text:#c23434;  --danger-border:#f6c8c8;
+    --warn:#c9760f;    --warn-bg:#fdf1e2;    --warn-text:#a5620c;    --warn-border:#f3ddb8;
+    --surface-shadow: 0 1px 2px rgba(16,24,40,0.06), 0 2px 6px rgba(16,24,40,0.05);
+    --scrim: rgba(244,245,247,0.86); --scrim-strong: rgba(244,245,247,0.92);
+    --focus-ring: rgba(75,87,196,0.22); --err-ring: rgba(214,69,69,0.18);
+    --earth-tint: rgba(94,105,210,0.06);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--canvas); color:var(--ink); font-family:var(--sans);
+    font-size:16px; line-height:1.5; letter-spacing:-0.05px;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    padding-bottom:calc(72px + env(safe-area-inset-bottom));
+    transition:background-color .2s ease, color .2s ease;
+  }
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 16px;}
+
+  /* ============ Header ============ */
+  header{
+    position:sticky; top:0; z-index:40; background:var(--scrim);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--hair);
+    padding-top:env(safe-area-inset-top);
+    transition:background-color .2s ease, border-color .2s ease;
+  }
+  .hbar{display:flex; align-items:center; gap:10px; height:56px; max-width:var(--maxw); margin:0 auto; padding:0 16px;}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:600; letter-spacing:-0.3px; font-size:16px;
+    min-width:0; flex:1 1 auto; overflow:hidden;}
+  .logo{width:32px;height:32px;flex:0 0 32px;border-radius:9px;overflow:hidden;display:block;box-shadow:0 0 0 1px var(--hair);}
+  .logo img{width:100%;height:100%;display:block;object-fit:cover;}
+  .brand-text{min-width:0;overflow:hidden;}
+  .brand-title{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brand small{display:block;font-size:11px;color:var(--ink-subtle);font-weight:400;letter-spacing:0;margin-top:-2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .spacer{flex:1;min-width:8px;}
+  @media(max-width:370px){.brand small{display:none;}}
+  .iconbtn{
+    width:34px;height:34px;border-radius:var(--r-md);border:1px solid var(--hair);background:var(--s2);
+    color:var(--ink-muted);display:grid;place-items:center;cursor:pointer;flex:0 0 34px;transition:.12s;
+  }
+  .iconbtn:hover{border-color:var(--hair-strong);color:var(--ink);}
+  .iconbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;
+    padding:4px 9px;border-radius:var(--r-pill);border:1px solid var(--hair-strong);color:var(--ink-muted);white-space:nowrap;}
+  .chip .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-subtle);}
+  .chip.ok{color:var(--success-text);border-color:var(--success-border);background:var(--success-bg);}
+  .chip.ok .dot{background:var(--success);}
+  .chip.bad{color:var(--danger-text);border-color:var(--danger-border);background:var(--danger-bg);}
+  .chip.bad .dot{background:var(--danger);}
+
+  /* ============ Layout ============ */
+  main{padding-top:20px;}
+  .view{display:none;}
+  .view.active{display:block;animation:fade .18s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+  .card{background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-lg);padding:var(--sp-lg);
+    margin-bottom:16px;box-shadow:var(--surface-shadow);transition:background-color .2s ease,border-color .2s ease;}
+  .card.tight{padding:var(--sp-md);}
+  .eyebrow{font-size:12px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--ink-subtle);margin:0 0 4px;}
+  .card h2{font-size:18px;font-weight:600;letter-spacing:-0.3px;margin:0 0 2px;}
+  .card .sub{font-size:13px;color:var(--ink-subtle);margin:0 0 16px;}
+
+  /* ============ Inputs ============ */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .field label{display:block;font-size:12.5px;color:var(--ink-muted);margin-bottom:6px;font-weight:500;}
+  .field label .u{color:var(--ink-tertiary);font-weight:400;}
+  .inp{position:relative;}
+  .inp input{
+    width:100%;background:var(--s2);border:1px solid var(--hair);color:var(--ink);
+    font-family:var(--mono);font-size:15px;padding:11px 12px;border-radius:var(--r-md);
+    outline:none;transition:border-color .12s,box-shadow .12s,background-color .2s;
+  }
+  .inp input:focus{border-color:var(--primary-focus);box-shadow:0 0 0 3px var(--focus-ring);}
+  .inp input.err{border-color:var(--danger);box-shadow:0 0 0 3px var(--err-ring);}
+  .row-actions{display:flex;gap:10px;margin-top:16px;}
+  .btn{font-family:var(--sans);font-size:14px;font-weight:500;border-radius:var(--r-md);
+    padding:10px 14px;border:1px solid transparent;cursor:pointer;transition:.12s;display:inline-flex;
+    align-items:center;justify-content:center;gap:7px;}
+  .btn:active{transform:scale(.98);}
+  .btn.primary{background:var(--primary);color:var(--on-primary);}
+  .btn.primary:hover{background:var(--primary-hover);}
+  .btn.ghost{background:var(--s2);color:var(--ink);border-color:var(--hair);}
+  .btn.ghost:hover{border-color:var(--hair-strong);}
+  .btn.wide{flex:1;}
+
+  /* ============ Feasibility banner ============ */
+  .verdict{border-radius:var(--r-lg);padding:16px 18px;margin-bottom:16px;border:1px solid;display:flex;gap:14px;align-items:flex-start;}
+  .verdict.ok{background:var(--success-bg);border-color:var(--success-border);}
+  .verdict.bad{background:var(--danger-bg);border-color:var(--danger-border);}
+  .verdict .vic{width:34px;height:34px;flex:0 0 34px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:18px;}
+  .verdict.ok .vic{background:var(--success-border);color:var(--success-text);}
+  .verdict.bad .vic{background:var(--danger-border);color:var(--danger-text);}
+  .verdict .vt{font-size:16px;font-weight:600;letter-spacing:-0.2px;}
+  .verdict.ok .vt{color:var(--success-text);}
+  .verdict.bad .vt{color:var(--danger-text);}
+  .verdict .vd{font-size:13px;color:var(--ink-muted);margin-top:3px;line-height:1.45;}
+  .verdict ul{margin:8px 0 0;padding-left:18px;}
+  .verdict li{font-size:12.5px;color:var(--ink-muted);margin-bottom:4px;}
+  .verdict li b{color:var(--ink);}
+  .ok-hl{color:var(--success-text);}
+
+  /* ============ Diagram ============ */
+  .diagram-card{padding:16px 12px 12px;}
+  .diagram-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px 10px;flex-wrap:wrap;gap:8px;}
+  .diagram-head h2{font-size:16px;margin:0;font-weight:600;}
+  .ve{font-family:var(--mono);font-size:11px;color:var(--ink-subtle);background:var(--s3);border:1px solid var(--hair);padding:3px 8px;border-radius:var(--r-pill);}
+  .svgwrap{width:100%;overflow-x:auto;border-radius:var(--r-md);}
+  svg.profile{display:block;width:100%;height:auto;background:var(--s2);border-radius:var(--r-md);}
+  .legend{display:flex;flex-wrap:wrap;gap:12px 18px;padding:12px 6px 2px;}
+  .legend span{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-muted);}
+  .legend i{width:16px;height:0;border-top-width:2px;border-top-style:solid;display:inline-block;}
+
+  /* ============ Result tables ============ */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-subtle);
+    font-weight:600;padding:0 8px 10px;border-bottom:1px solid var(--hair);}
+  thead th.num,tbody td.num{text-align:right;font-family:var(--mono);}
+  tbody td{padding:11px 8px;border-bottom:1px solid var(--hair);color:var(--ink-muted);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody td.seg{color:var(--ink);font-weight:500;}
+  tbody td.num{color:var(--ink);}
+  tr.neg td{color:var(--danger)!important;}
+  tr.neg td.num{color:var(--danger)!important;}
+  tr.total td{border-top:1px solid var(--hair-strong);font-weight:600;}
+  tr.total td.seg{color:var(--ink);}
+  tr.total td.num{color:var(--primary-hover);font-size:15px;}
+
+  /* KPI grid */
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .kpi{background:var(--s2);border:1px solid var(--hair);border-radius:var(--r-md);padding:13px 14px;}
+  .kpi .k{font-size:11.5px;color:var(--ink-subtle);margin-bottom:6px;}
+  .kpi .v{font-family:var(--mono);font-size:19px;font-weight:500;color:var(--ink);letter-spacing:-0.5px;}
+  .kpi .v small{font-size:12px;color:var(--ink-subtle);font-family:var(--sans);margin-left:3px;letter-spacing:0;}
+
+  /* ============ Checks tab ============ */
+  .kv{display:flex;justify-content:space-between;align-items:baseline;padding:12px 2px;border-bottom:1px solid var(--hair);gap:12px;}
+  .kv:last-child{border-bottom:none;}
+  .kv .lab{font-size:13.5px;color:var(--ink-muted);}
+  .kv .val{font-family:var(--mono);font-size:16px;color:var(--ink);white-space:nowrap;}
+  .bigres{background:var(--s2);border:1px solid var(--hair);border-radius:var(--r-md);padding:18px;text-align:center;margin-top:14px;}
+  .bigres .k{font-size:12px;color:var(--ink-subtle);}
+  .bigres .v{font-family:var(--mono);font-size:30px;color:var(--primary-hover);font-weight:500;letter-spacing:-1px;margin-top:4px;}
+  .citebox{font-size:11.5px;color:var(--ink-tertiary);background:var(--s2);border:1px solid var(--hair);
+    border-radius:var(--r-sm);padding:9px 11px;margin-top:12px;line-height:1.5;}
+  .citebox b{color:var(--ink-subtle);font-weight:600;}
+  .checkrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;
+    background:var(--s2);border:1px solid var(--hair);border-radius:var(--r-md);margin-top:8px;}
+  .checkrow .cl{font-size:13px;color:var(--ink-muted);}
+  .checkrow .cv{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;}
+  .checkrow .cv .dot{width:8px;height:8px;border-radius:50%;}
+  .checkrow.pass .cv{color:var(--success-text);}
+  .checkrow.pass .cv .dot{background:var(--success);}
+  .checkrow.fail .cv{color:var(--danger-text);}
+  .checkrow.fail .cv .dot{background:var(--danger);}
+
+  /* ============ Info / reference ============ */
+  .ref h3{font-size:14px;margin:18px 0 8px;color:var(--ink);}
+  .ref p{font-size:13px;color:var(--ink-muted);margin:0 0 10px;}
+  .formula{font-family:var(--mono);font-size:12.5px;background:var(--s2);border:1px solid var(--hair);
+    border-radius:var(--r-sm);padding:10px 12px;color:var(--ink-muted);overflow-x:auto;white-space:nowrap;margin:0 0 8px;}
+  .formula b{color:var(--primary-hover);}
+  .note{font-size:12px;color:var(--ink-tertiary);}
+  a{color:var(--primary-hover);text-decoration:none;}
+
+  /* ============ Bottom tab bar ============ */
+  nav.tabs{
+    position:fixed;bottom:0;left:0;right:0;z-index:50;
+    background:var(--scrim-strong);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border-top:1px solid var(--hair);display:flex;justify-content:center;
+    padding-bottom:env(safe-area-inset-bottom); transition:background-color .2s ease,border-color .2s ease;
+  }
+  nav.tabs .inner{display:flex;width:100%;max-width:var(--maxw);}
+  nav.tabs button{
+    flex:1;background:none;border:none;color:var(--ink-tertiary);font-family:var(--sans);
+    padding:10px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:4px;
+    font-size:11px;font-weight:500;cursor:pointer;transition:color .12s;letter-spacing:0.1px;
+  }
+  nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;}
+  nav.tabs button.active{color:var(--primary-hover);}
+  @media(max-width:420px){.kpi .v{font-size:17px;} .card{padding:18px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hbar">
+    <span class="logo"><img src="icons/LOGO.svg" alt="HDD Profile Studio logo"></span>
+    <div class="brand"><div class="brand-text">
+      <span class="brand-title">HDD Profile Studio</span>
+      <small>Directional drilling geometry</small>
+    </div></div>
+    <span class="spacer"></span>
+    <button class="iconbtn" id="themeToggle" aria-label="Toggle light / dark theme" title="Toggle theme">
+      <svg id="themeIconMoon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      <svg id="themeIconSun" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>
+    </button>
+    <span id="statusChip" class="chip"><span class="dot"></span><span id="statusText">—</span></span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ================= PROFILE VIEW ================= -->
+  <section id="view-profile" class="view active">
+
+    <div class="card">
+      <p class="eyebrow">Crossing parameters</p>
+      <h2>Inputs</h2>
+      <p class="sub">Metric units — matches your design spreadsheet. Values update live.</p>
+      <div class="grid" id="inputGrid">
+        <div class="field"><label>Entry angle <span class="u">(°)</span></label><div class="inp"><input id="entryAngle" type="number" inputmode="decimal" step="0.1" value="6"></div></div>
+        <div class="field"><label>Exit angle <span class="u">(°)</span></label><div class="inp"><input id="exitAngle" type="number" inputmode="decimal" step="0.1" value="6"></div></div>
+        <div class="field"><label>Entry depth to bore <span class="u">(m)</span></label><div class="inp"><input id="entryElev" type="number" inputmode="decimal" step="0.1" value="6"></div></div>
+        <div class="field"><label>Exit depth to bore <span class="u">(m)</span></label><div class="inp"><input id="exitElev" type="number" inputmode="decimal" step="0.1" value="6"></div></div>
+        <div class="field"><label>Entry ROC · R1 <span class="u">(m)</span></label><div class="inp"><input id="R1" type="number" inputmode="decimal" step="10" value="900"></div></div>
+        <div class="field"><label>Exit ROC · R2 <span class="u">(m)</span></label><div class="inp"><input id="R2" type="number" inputmode="decimal" step="10" value="900"></div></div>
+        <div class="field" style="grid-column:1 / -1"><label>Total plan distance <span class="u">(m, horizontal entry→exit)</span></label><div class="inp"><input id="tpd" type="number" inputmode="decimal" step="10" value="1500"></div></div>
+      </div>
+      <div class="row-actions">
+        <button class="btn ghost wide" id="btnExample">Load example</button>
+        <button class="btn ghost wide" id="btnReset">Clear</button>
+      </div>
+    </div>
+
+    <!-- feasibility -->
+    <div id="verdict"></div>
+
+    <!-- diagram -->
+    <div class="card diagram-card">
+      <div class="diagram-head">
+        <h2>Profile</h2>
+        <span class="ve" id="veLabel">—</span>
+      </div>
+      <div class="svgwrap"><svg class="profile" id="svg" viewBox="0 0 800 340" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <div class="legend">
+        <span><i style="border-color:var(--primary)"></i>Bore path</span>
+        <span><i style="border-color:var(--ink-subtle);border-top-style:dashed"></i>Ground surface</span>
+        <span><i style="border-color:var(--success)"></i>Straight (tangent)</span>
+        <span><i style="border-color:var(--warn)"></i>Curve (arc)</span>
+      </div>
+    </div>
+
+    <!-- segments -->
+    <div class="card">
+      <p class="eyebrow">Results</p>
+      <h2>Segment lengths</h2>
+      <p class="sub">Along-pipe length of each profile section. A negative value = infeasible geometry.</p>
+      <table><thead><tr><th>Segment</th><th>Type</th><th class="num">Length (m)</th></tr></thead>
+        <tbody id="segBody"></tbody>
+      </table>
+    </div>
+
+    <!-- key dimensions -->
+    <div class="card">
+      <p class="eyebrow">Key dimensions</p>
+      <h2>Summary</h2>
+      <div class="kpis" id="kpis" style="margin-top:14px"></div>
+    </div>
+
+    <!-- nodes -->
+    <div class="card">
+      <p class="eyebrow">Setting out</p>
+      <h2>Node coordinates</h2>
+      <p class="sub">Chainage measured from entry point A. Depth is below the entry surface.</p>
+      <table><thead><tr><th>Point</th><th class="num">Chainage X (m)</th><th class="num">Depth (m)</th></tr></thead>
+        <tbody id="nodeBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= CHECKS VIEW ================= -->
+  <section id="view-checks" class="view">
+
+    <div class="card">
+      <p class="eyebrow">Design input</p>
+      <h2>Pipe diameter</h2>
+      <p class="sub">Used by both checks below.</p>
+      <div class="field"><label>Pipe outside diameter <span class="u">(mm)</span></label><div class="inp"><input id="pipeOD" type="number" inputmode="decimal" step="1" value="660"></div></div>
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">Check 1</p>
+      <h2>Minimum bend radius</h2>
+      <p class="sub">Rule-of-thumb minimum design radius of curvature for steel pipe pulled by HDD.</p>
+      <div class="field"><label>Factor of safety <span class="u">(FOS)</span></label><div class="inp"><input id="radiusFOS" type="number" inputmode="decimal" step="0.05" value="1.0"></div></div>
+      <div class="bigres"><div class="k">Suggested minimum radius</div><div class="v" id="rMinOut">—</div></div>
+      <p class="formula" style="margin-top:14px">R<b>min</b> = 1000 &times; OD<sub>(m)</sub> &times; FOS</p>
+      <div id="radiusChecks"></div>
+      <div class="citebox"><b>Ref:</b> steel HDD design radius ≥ ~1,000–1,200 × OD is a long-standing industry rule of thumb (Faghih, Bayat &amp; Collins, HDD product-pipe bend-radius design literature).</div>
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">Check 2</p>
+      <h2>Minimum cover depth</h2>
+      <p class="sub">Minimum recommended soil cover above the pipe, based on diameter.</p>
+      <div class="kv"><span class="lab">5 × OD (arching basis)</span><span class="val" id="coverByDia">—</span></div>
+      <div class="kv"><span class="lab">Absolute floor (PRCI guidance)</span><span class="val">4.60 m</span></div>
+      <div class="bigres"><div class="k">Recommended minimum cover</div><div class="v" id="coverMinOut">—</div></div>
+      <div id="coverChecks"></div>
+      <div class="citebox"><b>Ref:</b> cover ≥ 5 × OD for soil arching to develop (PPI Handbook of PE Pipe, Ch.12; ASTM F1962 commentary). PRCI HDD Good Practices Guidelines sets an absolute floor of 15 ft (4.6 m).</div>
+    </div>
+  </section>
+
+  <!-- ================= INFO VIEW ================= -->
+  <section id="view-info" class="view">
+
+    <div class="card ref">
+      <p class="eyebrow">Reference</p>
+      <h2>How the geometry works</h2>
+      <p>The crossing is modelled as five sections between six points <b>A → B → C → D → E → F</b>: an entry straight (tangent), an entry curve, a horizontal bottom run, an exit curve, and an exit straight.</p>
+      <h3>Section lengths</h3>
+      <p class="formula">AB = H1 / sin θ1 − R1 · tan(θ1/2)</p>
+      <p class="formula">BC<b>arc</b> = R1 · θ1&nbsp;&nbsp;&nbsp;&nbsp;DE<b>arc</b> = R2 · θ2</p>
+      <p class="formula">EF = H2 / sin θ2 − R2 · tan(θ2/2)</p>
+      <p class="formula">CD = TPD − AB·cosθ1 − R1·sinθ1 − R2·sinθ2 − EF·cosθ2</p>
+      <p class="formula">HDD length = AB + BC + CD + DE + EF</p>
+      <h3>Feasibility</h3>
+      <p>The profile is <b>feasible</b> only when every section length is ≥ 0.</p>
+      <p class="formula">Entry tangent needs&nbsp; H1 ≥ R1·(1 − cos θ1)</p>
+      <p class="formula">Exit tangent needs&nbsp;&nbsp; H2 ≥ R2·(1 − cos θ2)</p>
+      <p class="formula">Bottom run needs&nbsp;&nbsp;&nbsp;&nbsp; TPD ≥ curve + tangent horizontals</p>
+      <p class="note">Symbols: θ = angle · H = depth to bore · R = radius of curvature (ROC) · TPD = total plan distance. Verified against the source spreadsheet (θ=6°, H=6&nbsp;m, R=900&nbsp;m, TPD=1500&nbsp;m → HDD length 1500.46&nbsp;m).</p>
+    </div>
+
+    <div class="card ref">
+      <p class="eyebrow">About</p>
+      <h2>HDD Profile Studio</h2>
+      <p>Offline geometry calculator for horizontal directional drilling crossing profiles. All computation runs on your device — no internet needed after first load.</p>
+    </div>
+  </section>
+
+</main>
+
+<nav class="tabs">
+  <div class="inner">
+    <button data-view="profile" class="active">
+      <svg viewBox="0 0 24 24"><path d="M2 7c3.5 0 3.5 10 8 10s4.5-10 12-10"/><circle cx="2" cy="7" r="1.4" fill="currentColor" stroke="none"/><circle cx="22" cy="7" r="1.4" fill="currentColor" stroke="none"/></svg>
+      Profile
+    </button>
+    <button data-view="checks">
+      <svg viewBox="0 0 24 24"><path d="M9 12.5l2 2 4-4.5"/><circle cx="12" cy="12" r="9.5"/></svg>
+      Checks
+    </button>
+    <button data-view="info">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.6" r="0.9" fill="currentColor" stroke="none"/></svg>
+      Info
+    </button>
+  </div>
+</nav>
+
+<script>
+/* ============================ Theme ============================ */
+const THEME_KEY = 'hdd-profile-theme-v1';
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', t==='light' ? '#f4f5f7' : '#010102');
+  document.getElementById('themeIconMoon').style.display = t==='light' ? 'block' : 'none';
+  document.getElementById('themeIconSun').style.display  = t==='light' ? 'none'  : 'block';
+  try{ localStorage.setItem(THEME_KEY, t); }catch(e){}
+}
+function initTheme(){
+  let t;
+  try{ t = localStorage.getItem(THEME_KEY); }catch(e){}
+  if(!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+  applyTheme(t);
+}
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme');
+  applyTheme(cur==='light' ? 'dark' : 'light');
+  render(); renderChecks();
+});
+
+/* ============================ Geometry engine ============================ */
+const DEG = Math.PI/180;
+function num(id){ const el=document.getElementById(id); if(!el) return NaN; const v = parseFloat(el.value); return isFinite(v)? v : NaN; }
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+function compute(p){
+  const t1 = p.entryAngle*DEG, t2 = p.exitAngle*DEG;
+  const H1 = p.entryElev, H2 = p.exitElev, R1 = p.R1, R2 = p.R2, TPD = p.tpd;
+
+  const AB = p.entryAngle>0 ? H1/Math.sin(t1) - R1*Math.tan(t1/2) : NaN;
+  const EF = p.exitAngle>0 ? H2/Math.sin(t2) - R2*Math.tan(t2/2) : NaN;
+  const BC = R1*t1;
+  const DE = R2*t2;
+
+  const ABh = AB*Math.cos(t1);
+  const c1h = R1*Math.sin(t1);
+  const c2h = R2*Math.sin(t2);
+  const EFh = EF*Math.cos(t2);
+  const CD  = TPD - ABh - c1h - c2h - EFh;
+
+  const total = AB + BC + CD + DE + EF;
+
+  const A = {x:0, d:0};
+  const B = {x:ABh, d:AB*Math.sin(t1)};
+  const C = {x:B.x + c1h, d:B.d + R1*(1-Math.cos(t1))};
+  const D = {x:C.x + CD,  d:C.d};
+  const E = {x:D.x + c2h, d:D.d - R2*(1-Math.cos(t2))};
+  const F = {x:E.x + EFh, d:E.d - EF*Math.sin(t2)};
+
+  const minH1 = R1*(1-Math.cos(t1));
+  const minH2 = R2*(1-Math.cos(t2));
+  const minTPD = ABh + c1h + c2h + EFh;
+
+  return {t1,t2,H1,H2,R1,R2,TPD, AB,BC,CD,DE,EF, total,
+          nodes:{A,B,C,D,E,F}, minH1,minH2,minTPD,
+          horizCheck: ABh+c1h+CD+c2h+EFh};
+}
+
+function fmt(v,dp=2){ if(!isFinite(v)) return '—'; return v.toLocaleString(undefined,{minimumFractionDigits:dp,maximumFractionDigits:dp}); }
+
+/* ============================ Validation & feasibility ============================ */
+function validate(p){
+  const errs = [];
+  const set = (id,bad)=>document.getElementById(id).classList.toggle('err',bad);
+  const chk = (id,cond,msg)=>{ set(id,!cond); if(!cond) errs.push(msg); };
+  chk('entryAngle', p.entryAngle>0 && p.entryAngle<90, 'Entry angle must be between 0 and 90°.');
+  chk('exitAngle',  p.exitAngle>0  && p.exitAngle<90,  'Exit angle must be between 0 and 90°.');
+  chk('entryElev',  p.entryElev>0, 'Entry depth must be positive.');
+  chk('exitElev',   p.exitElev>0,  'Exit depth must be positive.');
+  chk('R1', p.R1>0, 'Entry ROC must be positive.');
+  chk('R2', p.R2>0, 'Exit ROC must be positive.');
+  chk('tpd', p.tpd>0, 'Total plan distance must be positive.');
+  return errs;
+}
+
+/* ============================ Render — Profile tab ============================ */
+const SEGS = [
+  ['AB','Entry tangent','Straight','AB'],
+  ['BC','Entry curve','Arc','BC'],
+  ['CD','Bottom run','Straight','CD'],
+  ['DE','Exit curve','Arc','DE'],
+  ['EF','Exit tangent','Straight','EF'],
+];
+
+function setStatus(state,text){
+  const chip=document.getElementById('statusChip');
+  chip.className='chip'+(state==='ok'?' ok':state==='bad'?' bad':'');
+  document.getElementById('statusText').textContent=text;
+}
+
+function render(){
+  const p = {
+    entryAngle:num('entryAngle'), exitAngle:num('exitAngle'),
+    entryElev:num('entryElev'), exitElev:num('exitElev'),
+    R1:num('R1'), R2:num('R2'), tpd:num('tpd')
+  };
+  save(p);
+  const errs = validate(p);
+  const vEl = document.getElementById('verdict');
+
+  if(errs.length){
+    setStatus('bad','Check inputs');
+    vEl.className='verdict bad';
+    vEl.innerHTML = `<div class="vic">!</div><div><div class="vt">Invalid input</div>
+      <div class="vd">Fix the highlighted fields:</div><ul>${errs.map(e=>`<li>${e}</li>`).join('')}</ul></div>`;
+    document.getElementById('segBody').innerHTML='';
+    document.getElementById('nodeBody').innerHTML='';
+    document.getElementById('kpis').innerHTML='';
+    document.getElementById('svg').innerHTML='';
+    document.getElementById('veLabel').textContent='—';
+    return;
+  }
+
+  const r = compute(p);
+  const segVals = {AB:r.AB,BC:r.BC,CD:r.CD,DE:r.DE,EF:r.EF};
+  const negs = SEGS.filter(s=>segVals[s[3]] < 0);
+  const feasible = negs.length===0;
+
+  if(feasible){
+    setStatus('ok','Feasible');
+    vEl.className='verdict ok';
+    vEl.innerHTML = `<div class="vic">✓</div><div>
+      <div class="vt">Profile is feasible</div>
+      <div class="vd">All five sections have positive length. Total HDD pipe length ≈ <b class="ok-hl">${fmt(r.total)} m</b>.</div></div>`;
+  } else {
+    setStatus('bad','Not feasible');
+    const tips=[];
+    if(r.AB<0) tips.push(`<b>Entry tangent (AB) is negative.</b> Entry depth must be ≥ R1·(1−cosθ1) = <b>${fmt(r.minH1)} m</b> — increase entry depth, or reduce entry ROC / entry angle.`);
+    if(r.EF<0) tips.push(`<b>Exit tangent (EF) is negative.</b> Exit depth must be ≥ R2·(1−cosθ2) = <b>${fmt(r.minH2)} m</b> — increase exit depth, or reduce exit ROC / exit angle.`);
+    if(r.CD<0) tips.push(`<b>Bottom run (CD) is negative.</b> Total plan distance is too short — it must be ≥ <b>${fmt(r.minTPD)} m</b> for these curves, or reduce the radii / angles / depths.`);
+    vEl.className='verdict bad';
+    vEl.innerHTML = `<div class="vic">✕</div><div>
+      <div class="vt">Profile is not feasible</div>
+      <div class="vd">One or more sections compute to a negative length at these inputs:</div>
+      <ul>${tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>`;
+  }
+
+  document.getElementById('segBody').innerHTML = SEGS.map(s=>{
+    const v=segVals[s[3]]; const neg=v<0;
+    return `<tr class="${neg?'neg':''}"><td class="seg">${s[0]} · ${s[1]}</td>
+      <td>${s[2]}</td><td class="num">${fmt(v)}</td></tr>`;
+  }).join('') + `<tr class="total"><td class="seg">AF · HDD length</td><td></td><td class="num">${fmt(r.total)}</td></tr>`;
+
+  const kpis = [
+    ['Total HDD length', r.total, 'm'],
+    ['Horizontal (check = TPD)', r.horizCheck, 'm'],
+    ['Max bore depth', Math.max(r.H1,r.H2), 'm'],
+    ['Entry / exit surface Δ', (r.H1 - r.H2), 'm'],
+  ];
+  document.getElementById('kpis').innerHTML = kpis.map(k=>
+    `<div class="kpi"><div class="k">${k[0]}</div><div class="v">${fmt(k[1])}<small>${k[2]}</small></div></div>`).join('');
+
+  const N=r.nodes; const order=[['A',N.A],['B',N.B],['C',N.C],['D',N.D],['E',N.E],['F',N.F]];
+  document.getElementById('nodeBody').innerHTML = order.map(([lab,n])=>
+    `<tr><td class="seg">${lab}</td><td class="num">${fmt(n.x)}</td><td class="num">${fmt(n.d)}</td></tr>`).join('');
+
+  drawProfile(r, feasible);
+}
+
+/* ============================ SVG profile drawing ============================ */
+function arcPts(from, R, aFrom, aTo, kind){
+  const pts=[]; const steps=28;
+  for(let i=0;i<=steps;i++){
+    const a = aFrom + (aTo-aFrom)*i/steps;
+    if(kind==='entry'){
+      pts.push({x: from.x + R*(Math.sin(aFrom)-Math.sin(a)), d: from.d + R*(Math.cos(a)-Math.cos(aFrom))});
+    } else {
+      pts.push({x: from.x + R*Math.sin(a), d: from.d - R*(1-Math.cos(a))});
+    }
+  }
+  return pts;
+}
+
+function drawProfile(r, feasible){
+  const svg=document.getElementById('svg');
+  const W=800,H=340, padL=54,padR=26,padT=30,padB=42;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const N=r.nodes;
+
+  const t1=r.t1,t2=r.t2;
+  const segAB=[N.A,N.B];
+  const segBC=arcPts(N.B, r.R1, t1, 0, 'entry');
+  const segCD=[N.C,N.D];
+  const segDE=arcPts(N.D, r.R2, 0, t2, 'exit');
+  const segEF=[N.E,N.F];
+  const all=[...segAB,...segBC,...segCD,...segDE,...segEF];
+
+  let xMax=Math.max(r.TPD, ...all.map(p=>p.x), N.F.x);
+  let xMin=Math.min(0, ...all.map(p=>p.x));
+  let dMax=Math.max(0.001, ...all.map(p=>p.d), N.A.d, N.F.d);
+  let dMin=Math.min(0, ...all.map(p=>p.d), N.F.d);
+  const xr=(xMax-xMin)||1, dr=(dMax-dMin)||1;
+  const sx=plotW/xr, sy=plotH/dr;
+  const ve = sy/sx;
+
+  const X=x=>padL+(x-xMin)*sx;
+  const Y=d=>padT+(d-dMin)*sy;
+
+  document.getElementById('veLabel').textContent = 'Vertical exaggeration ≈ '+ (ve>=10?Math.round(ve): ve.toFixed(1)) +'×';
+
+  const poly=pts=>pts.map(p=>`${X(p.x).toFixed(1)},${Y(p.d).toFixed(1)}`).join(' ');
+
+  // theme-aware colors, read live so the diagram matches light/dark mode
+  const cHair    = cssVar('--hair');
+  const cSubtle  = cssVar('--ink-subtle');
+  const cTert    = cssVar('--ink-tertiary');
+  const cMuted   = cssVar('--ink-muted');
+  const cSuccess = cssVar('--success');
+  const cWarn    = cssVar('--warn');
+  const cPrimary = cssVar('--primary');
+  const cDanger  = cssVar('--danger');
+  const cCanvas  = cssVar('--canvas');
+  const cEarth   = cssVar('--earth-tint');
+  const surfCol = cSubtle;
+  const boreCol = feasible ? cPrimary : cDanger;
+
+  const gy0=Y(N.A.d), gyF=Y(N.F.d);
+  const earthTop = `${X(N.A.x)},${gy0} ${X(N.F.x)},${gyF}`;
+  const earth = `M ${X(xMin)} ${gy0} L ${X(N.A.x)} ${gy0} L ${X(N.F.x)} ${gyF} L ${X(xMax)} ${gyF} L ${X(xMax)} ${H-padB} L ${X(xMin)} ${H-padB} Z`;
+
+  let grid='';
+  const dTicks=4;
+  for(let i=0;i<=dTicks;i++){
+    const dv=dMin+(dMax-dMin)*i/dTicks; const yy=Y(dv);
+    grid+=`<line x1="${padL}" y1="${yy.toFixed(1)}" x2="${W-padR}" y2="${yy.toFixed(1)}" stroke="${cHair}" stroke-width="1"/>`;
+    grid+=`<text x="${padL-8}" y="${(yy+4).toFixed(1)}" fill="${cTert}" font-size="11" font-family="ui-monospace,monospace" text-anchor="end">${dv.toFixed(1)}</text>`;
+  }
+  const xTicks=4;
+  for(let i=0;i<=xTicks;i++){
+    const xv=xMin+(xMax-xMin)*i/xTicks; const xx=X(xv);
+    grid+=`<text x="${xx.toFixed(1)}" y="${H-padB+18}" fill="${cTert}" font-size="11" font-family="ui-monospace,monospace" text-anchor="middle">${Math.round(xv)}</text>`;
+  }
+
+  const nodes=[['A',N.A],['B',N.B],['C',N.C],['D',N.D],['E',N.E],['F',N.F]];
+  let marks='';
+  nodes.forEach(([lab,n])=>{
+    const cx=X(n.x), cy=Y(n.d);
+    marks+=`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.4" fill="${cCanvas}" stroke="${boreCol}" stroke-width="2"/>`;
+    const above = (lab==='A'||lab==='F');
+    marks+=`<text x="${cx.toFixed(1)}" y="${(cy+(above?-9:16)).toFixed(1)}" fill="${cMuted}" font-size="11.5" font-weight="600" text-anchor="middle">${lab}</text>`;
+  });
+
+  const axis=`<text x="${padL-40}" y="${padT-14}" fill="${cSubtle}" font-size="10.5">Depth (m)</text>
+              <text x="${W-padR}" y="${H-6}" fill="${cSubtle}" font-size="10.5" text-anchor="end">Chainage (m)</text>`;
+
+  svg.innerHTML = `
+    ${grid}
+    <path d="${earth}" fill="${cEarth}" stroke="none"/>
+    <polyline points="${earthTop}" fill="none" stroke="${surfCol}" stroke-width="1.6" stroke-dasharray="5 4"/>
+    <polyline points="${poly(segAB)}" fill="none" stroke="${cSuccess}" stroke-width="3" stroke-linecap="round"/>
+    <polyline points="${poly(segBC)}" fill="none" stroke="${cWarn}" stroke-width="3" stroke-linecap="round"/>
+    <polyline points="${poly(segCD)}" fill="none" stroke="${cSuccess}" stroke-width="3" stroke-linecap="round"/>
+    <polyline points="${poly(segDE)}" fill="none" stroke="${cWarn}" stroke-width="3" stroke-linecap="round"/>
+    <polyline points="${poly(segEF)}" fill="none" stroke="${cSuccess}" stroke-width="3" stroke-linecap="round"/>
+    ${marks}
+    ${axis}
+  `;
+}
+
+/* ============================ Render — Checks tab ============================ */
+function checkRow(label, actualVal, minVal, unit){
+  if(!isFinite(actualVal) || !isFinite(minVal)) return '';
+  const pass = actualVal >= minVal;
+  return `<div class="checkrow ${pass?'pass':'fail'}">
+    <span class="cl">${label}: <b>${fmt(actualVal,2)} ${unit}</b></span>
+    <span class="cv"><span class="dot"></span>${pass? 'OK — meets minimum' : 'Below minimum'}</span>
+  </div>`;
+}
+
+function renderChecks(){
+  const OD_mm = num('pipeOD');
+  const Dm = OD_mm>0 ? OD_mm/1000 : NaN;
+
+  // --- Check 1: minimum bend radius ---
+  const fos = num('radiusFOS');
+  const rMin = (Dm>0 && fos>0) ? 1000 * Dm * fos : NaN;
+  document.getElementById('rMinOut').textContent = isFinite(rMin) ? fmt(rMin)+' m' : '—';
+
+  const R1 = num('R1'), R2 = num('R2');
+  let radiusHtml = '';
+  if(isFinite(rMin)){
+    radiusHtml += checkRow('Entry ROC (R1) on Profile tab', R1, rMin, 'm');
+    radiusHtml += checkRow('Exit ROC (R2) on Profile tab', R2, rMin, 'm');
+  }
+  document.getElementById('radiusChecks').innerHTML = radiusHtml;
+
+  // --- Check 2: minimum cover depth ---
+  const coverByDia = Dm>0 ? 5*Dm : NaN;
+  const coverMin = Dm>0 ? Math.max(coverByDia, 4.6) : NaN;
+  document.getElementById('coverByDia').textContent = isFinite(coverByDia) ? fmt(coverByDia)+' m' : '—';
+  document.getElementById('coverMinOut').textContent = isFinite(coverMin) ? fmt(coverMin)+' m' : '—';
+
+  const H1 = num('entryElev'), H2 = num('exitElev');
+  let coverHtml = '';
+  if(isFinite(coverMin)){
+    coverHtml += checkRow('Entry depth on Profile tab', H1, coverMin, 'm');
+    coverHtml += checkRow('Exit depth on Profile tab', H2, coverMin, 'm');
+  }
+  document.getElementById('coverChecks').innerHTML = coverHtml;
+}
+
+/* ============================ Persistence ============================ */
+const KEY='hdd-profile-inputs-v1';
+function save(p){ try{ localStorage.setItem(KEY, JSON.stringify(p)); }catch(e){} }
+function load(){
+  try{
+    const s=localStorage.getItem(KEY); if(!s) return;
+    const p=JSON.parse(s);
+    for(const k in p){ const el=document.getElementById(k); if(el && isFinite(p[k])) el.value=p[k]; }
+  }catch(e){}
+}
+
+/* ============================ Wiring ============================ */
+const EXAMPLE={entryAngle:6,exitAngle:6,entryElev:6,exitElev:6,R1:900,R2:900,tpd:1500};
+function setVals(o){ for(const k in o){ const el=document.getElementById(k); if(el) el.value=o[k]; } }
+
+document.addEventListener('input',()=>{ render(); renderChecks(); });
+document.getElementById('btnExample').addEventListener('click',()=>{ setVals(EXAMPLE); render(); renderChecks(); });
+document.getElementById('btnReset').addEventListener('click',()=>{
+  ['entryAngle','exitAngle','entryElev','exitElev','R1','R2','tpd'].forEach(id=>document.getElementById(id).value='');
+  render(); renderChecks();
+});
+
+// tabs
+document.querySelectorAll('nav.tabs button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+b.dataset.view).classList.add('active');
+    window.scrollTo({top:0,behavior:'instant'});
+  });
+});
+
+// service worker (silent — full offline caching, no install prompt UI)
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+
+// init
+initTheme();
+load(); render(); renderChecks();
+</script>
+</body>
+</html>
