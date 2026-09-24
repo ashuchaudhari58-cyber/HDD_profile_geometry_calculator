@@ -125,7 +125,8 @@
   h1.title{font-weight:700;font-size:clamp(25px,6.6vw,42px);letter-spacing:.14em;line-height:1.1;margin:12px 0 4px;color:var(--title-ink);text-shadow:var(--title-glow);}
   .tagline{font-weight:600;letter-spacing:.32em;color:var(--ink-2);font-size:clamp(11px,3.1vw,15px);}
   .hero-rule{height:1px;max-width:560px;margin:14px auto 0;background:linear-gradient(90deg,transparent,var(--accent-border),transparent);}
-  .mainnav{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:640px;margin:14px auto 0;}
+  .mainnav{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:920px;margin:14px auto 0;}
+  @media(min-width:760px){.mainnav{grid-template-columns:repeat(6,1fr);}}
   .mainnav button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px;border-radius:14px;
     border:1px solid var(--card-border-2);background:var(--nav-bg);color:var(--ink-2);font-weight:700;font-size:15px;
     letter-spacing:.04em;cursor:pointer;transition:.15s;}
@@ -210,7 +211,7 @@
   .ibox input::-webkit-outer-spin-button,.ibox input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
   .ibox input::placeholder{color:var(--ph);}
   .ibox input:focus,.fld select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
-  .ibox input.err{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-soft);}
+  .ibox input.err,.fld select.err{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-soft);}
   .ibox .u{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:'Share Tech Mono',monospace;color:var(--ink-4);font-size:13.5px;pointer-events:none;}
   .hint{font-size:13.5px;color:var(--ink-4);margin-top:5px;line-height:1.3;}
 
@@ -432,6 +433,32 @@
     transition:.2s;box-shadow:var(--shadow);max-width:calc(100vw - 32px);text-align:center;}
   .toast.on{opacity:1;transform:translate(-50%,0);}
 
+  /* pipe tab */
+  .spec{font-family:'Share Tech Mono',monospace;font-size:15px;line-height:1.55;color:var(--ink);background:var(--accent-soft);border:1px solid var(--accent-border);
+    border-radius:14px;padding:12px 14px;margin-bottom:12px;}
+  .spec b{color:var(--accent-text);font-weight:400;}
+  .chips.mini{margin-top:8px;gap:6px;}
+  button.chip{cursor:pointer;font-family:inherit;} button.chip:hover{border-color:var(--accent-border);}
+  button.chip.on{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent-text);}
+  .kv .val{text-align:right;}
+  .kv .val small{display:block;color:var(--ink-3);font-size:12.5px;margin-top:1px;}
+  .kv .val.good{color:var(--ok-text);} .kv .val.bad{color:var(--danger-text);} .kv .val.warn{color:var(--warn-text);}
+  /* unit converter */
+  .ucats{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;}
+  .ucat{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:12px;border:1px solid var(--card-border-2);background:var(--card-2);
+    color:var(--ink-2);font-weight:700;font-size:15px;cursor:pointer;text-align:left;line-height:1.15;}
+  .ucat .e{font-size:18px;}
+  .ucat.on{border-color:var(--purple);background:var(--purple-soft);color:var(--purple-text);}
+  .urow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:end;margin-top:12px;}
+  .swap{height:50px;width:50px;border-radius:12px;border:1px solid var(--accent-border);background:var(--accent-soft);color:var(--accent-text);font-size:20px;cursor:pointer;}
+  .ures{margin-top:14px;text-align:center;padding:16px;border-radius:16px;border:1px solid var(--accent-border);background:var(--accent-soft);cursor:pointer;}
+  .ures .v{font-family:'Share Tech Mono',monospace;font-size:clamp(24px,7vw,34px);color:var(--accent-text);word-break:break-all;}
+  .ures .k{font-size:14.5px;color:var(--ink-3);margin-top:4px;}
+  .utbl tr{cursor:pointer;} .utbl tr:hover td{background:var(--accent-soft);}
+  .utbl td.muted{white-space:normal;font-size:14px;line-height:1.25;min-width:90px;}
+  .utbl tr.on td{background:var(--purple-soft);color:var(--purple-text);}
+  .usr{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;}
+
   @media(max-width:420px){.card{padding:16px;} .kpi .v{font-size:19px;}}
   @media print{
     body::before,.hamb,.mainnav,.hero-row,.fpill,.drawer,.scrim,.btnrow,.toast,.trk,.exprow .btn{display:none!important;}
@@ -455,7 +482,9 @@
     <nav class="mainnav" id="mainNav" aria-label="Sections">
       <button data-view="basic"><span class="e">📐</span><span>Basic</span></button>
       <button data-view="advanced"><span class="e">🔩</span><span>Advanced</span></button>
+      <button data-view="pipe"><span class="e">🛢️</span><span>Pipe</span></button>
       <button data-view="checks"><span class="e">✅</span><span>Checks</span></button>
+      <button data-view="units"><span class="e">🔁</span><span>Units</span></button>
       <button data-view="info"><span class="e">📖</span><span>Guide</span></button>
     </nav>
     <div class="hero-row">
@@ -636,6 +665,104 @@
     </section>
   </div>
 
+  <!-- ================= PIPE ================= -->
+  <div id="pipeView" class="single">
+    <section class="card">
+      <h2 class="sect-t" style="margin-top:0">🛢️ Pipe specification</h2>
+      <p class="fillnote">★ Fill only starred fields. All others are optional.</p>
+      <div class="fgrid">
+        <div class="grp">Pipe</div>
+        <div class="fld"><label for="p_grade">API 5L grade <span class="star">★</span></label>
+          <select id="p_grade" data-p="grade"></select><div class="hint" id="p_gradeHint"></div></div>
+        <div class="fld"><label for="p_nps">Size quick pick <span class="pill">optional</span></label>
+          <select id="p_nps"></select><div class="hint">Fills the OD (ASME B36.10M / API 5L)</div></div>
+        <div class="fld"><label for="p_od">Outside diameter <span class="star">★</span></label><div class="ibox"><input id="p_od" data-p="od" type="number" inputmode="decimal" step="any" placeholder="e.g. 406.4"><span class="u">mm</span></div><div class="hint" id="p_odHint">Same OD as the Checks tab</div></div>
+        <div class="fld"><label for="p_wt">Wall thickness <span class="star">★</span></label><div class="ibox"><input id="p_wt" data-p="wt" type="number" inputmode="decimal" step="any" list="wtList" placeholder="e.g. 9.53"><span class="u">mm</span></div><div class="hint" id="p_wtHint">Tap for common thicknesses</div></div>
+        <div class="fld" style="grid-column:1/-1"><label for="p_rho">Material density <span class="star">★</span></label><div class="ibox"><input id="p_rho" data-p="rho" type="number" inputmode="decimal" step="any" placeholder="e.g. 7850"><span class="u">kg/m³</span></div>
+          <div class="chips mini" id="rhoChips">
+            <button class="chip" data-rho="7850">Carbon steel 7850</button><button class="chip" data-rho="7930">Stainless 7930</button>
+            <button class="chip" data-rho="7100">Ductile iron 7100</button><button class="chip" data-rho="955">HDPE 955</button>
+          </div></div>
+        <div class="fld cgr"><label for="p_smys">SMYS <span class="star">★</span></label><div class="ibox"><input id="p_smys" data-p="smys" type="number" inputmode="decimal" step="any" placeholder="e.g. 360"><span class="u">MPa</span></div><div class="hint">Specified min yield strength</div></div>
+        <div class="fld cgr"><label for="p_smts">SMTS <span class="pill">optional</span></label><div class="ibox"><input id="p_smts" data-p="smts" type="number" inputmode="decimal" step="any" placeholder="e.g. 460"><span class="u">MPa</span></div><div class="hint">Specified min tensile strength</div></div>
+
+        <div class="grp">Coating</div>
+        <div class="fld"><label for="p_ct">Coating thickness <span class="pill">optional</span></label><div class="ibox"><input id="p_ct" data-p="ct" type="number" inputmode="decimal" step="any" placeholder="0"><span class="u">mm</span></div><div class="hint">FBE ≈ 0.4–1 · 3LPE ≈ 3</div></div>
+        <div class="fld"><label for="p_crho">Coating density <span class="pill">optional</span></label><div class="ibox"><input id="p_crho" data-p="crho" type="number" inputmode="decimal" step="any" placeholder="1440"><span class="u">kg/m³</span></div><div class="hint">FBE 1440 · PE 940</div></div>
+
+        <div class="grp">String &amp; installation</div>
+        <div class="fld"><label for="p_len">Pipe string length <span class="pill">optional</span></label><div class="ibox"><input id="p_len" data-p="len" type="number" inputmode="decimal" step="any" placeholder="= HDD length"><span class="u">m</span></div><div class="hint" id="p_lenHint">Defaults to the HDD length of your design</div></div>
+        <div class="fld"><label for="p_jl">Joint length <span class="pill">optional</span></label><div class="ibox"><input id="p_jl" data-p="jl" type="number" inputmode="decimal" step="any" placeholder="12"><span class="u">m</span></div><div class="hint">Per pipe joint</div></div>
+        <div class="fld"><label for="p_mud">Drilling fluid density <span class="pill">optional</span></label><div class="ibox"><input id="p_mud" data-p="mud" type="number" inputmode="decimal" step="any" placeholder="1200"><span class="u">kg/m³</span></div><div class="hint" id="p_mudHint">≈ 10.0 ppg · SG 1.20</div></div>
+        <div class="fld"><label for="p_F">Design factor F <span class="pill">optional</span></label><div class="ibox"><input id="p_F" data-p="F" type="number" inputmode="decimal" step="any" placeholder="0.72"><span class="u">F</span></div><div class="hint">ASME B31.4 / B31.8</div></div>
+        <div class="fld"><label for="p_E">Elastic modulus <span class="pill">optional</span></label><div class="ibox"><input id="p_E" data-p="E" type="number" inputmode="decimal" step="any" placeholder="207000"><span class="u">MPa</span></div><div class="hint">Steel 207,000</div></div>
+      </div>
+      <datalist id="wtList"></datalist>
+      <div class="btnrow">
+        <button class="btn cy" id="p_example">⚡ Load example</button>
+        <button class="btn" id="p_copy">📋 Copy spec</button>
+      </div>
+    </section>
+
+    <div id="pipeVerdict"></div>
+    <div id="pipeOut">
+      <section class="card">
+        <div class="card-h"><div class="card-t"><span class="e">⚖️</span>Weight</div></div>
+        <div class="spec" id="p_spec"></div>
+        <div class="kpis k3" id="p_wKpis"></div>
+      </section>
+      <section class="card">
+        <div class="card-h"><div class="card-t"><span class="e">⭕</span>Section properties</div></div>
+        <div class="kpis k3" id="p_gKpis"></div>
+      </section>
+      <section class="card">
+        <div class="card-h"><div class="card-t"><span class="e">🧊</span>Volume</div></div>
+        <div class="kpis k3" id="p_vKpis"></div>
+        <p class="note">Internal volume = water needed to fill the string (ballast / hydrotest). Displaced volume includes the coating.</p>
+      </section>
+      <section class="card">
+        <div class="card-h"><div class="card-t"><span class="e">🌊</span>Buoyancy in drilling fluid</div></div>
+        <div id="p_buoy"></div>
+      </section>
+      <section class="card" id="p_strCard">
+        <div class="card-h"><div class="card-t"><span class="e">🏋️</span>Strength</div></div>
+        <div id="p_str"></div>
+      </section>
+      <section class="card ref">
+        <div class="card-h"><div class="card-t"><span class="e">📐</span>Formulas</div></div>
+        <p class="formula">ID = OD − 2t&nbsp;&nbsp;&nbsp;A<b>steel</b> = π/4 · (OD² − ID²)&nbsp;&nbsp;&nbsp;w = ρ · A<b>steel</b></p>
+        <p class="formula">API 5L plain-end mass: w<b>pe</b> = (D − t) · t · 0.02466 kg/m&nbsp;&nbsp;(D, t in mm, steel 7850 kg/m³)</p>
+        <p class="formula">Buoyant weight = w<b>pipe</b> + w<b>coat</b> − ρ<b>mud</b> · π/4 · OD<b>coated</b>²&nbsp;&nbsp;(+ ρ<b>water</b> · π/4 · ID² when water-filled)</p>
+        <p class="formula">Barlow: P = 2 · S · t / D&nbsp;&nbsp;&nbsp;Design: P = 2 · SMYS · t · F / D&nbsp;&nbsp;&nbsp;Bending: σ<b>b</b> = E · D / (2R)</p>
+        <div class="citebox"><b>Ref:</b> SMYS / SMTS from API 5L (PSL1 grades A25–X70, PSL2 minimums for X80–X120). Tensile capacity is shown at 90% SMYS, the usual HDD pull-back limit for steel pipe (PRCI HDD installation guidelines).</div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ================= UNITS ================= -->
+  <div id="unitsView" class="single">
+    <section class="card">
+      <h2 class="sect-t" style="margin-top:0">🔁 Unit converter</h2>
+      <div class="fld" style="margin-bottom:12px"><div class="ibox"><input id="u_find" type="search" autocomplete="off" placeholder="Search a unit, e.g. psi, ppg, bbl, kip, gpm" style="padding-right:14px"></div><div class="usr" id="u_found"></div></div>
+      <div class="ucats" id="u_cats"></div>
+    </section>
+    <section class="card">
+      <div class="card-h"><div class="card-t"><span class="e" id="u_catE">📏</span><span id="u_catN">Length</span></div></div>
+      <div class="fld"><label for="u_val">Value</label><div class="ibox"><input id="u_val" type="number" step="any" placeholder="1" style="padding-right:14px"></div></div>
+      <div class="urow">
+        <div class="fld"><label for="u_from">From</label><select id="u_from"></select></div>
+        <button class="swap" id="u_swap" aria-label="Swap units" title="Swap">⇄</button>
+        <div class="fld"><label for="u_to">To</label><select id="u_to"></select></div>
+      </div>
+      <div class="ures" id="u_res" title="Tap to copy"><div class="v" id="u_out">—</div><div class="k" id="u_eq"></div></div>
+    </section>
+    <section class="card">
+      <div class="card-h"><div class="card-t"><span class="e">📋</span>All units</div></div>
+      <p class="sub">Your value in every unit of this category. Tap a row to copy it.</p>
+      <div class="tbl-wrap"><table class="utbl"><thead><tr><th class="l">Unit</th><th class="l">Name</th><th>Value</th></tr></thead><tbody id="u_all"></tbody></table></div>
+    </section>
+  </div>
+
   <!-- ================= GUIDE ================= -->
   <div id="infoView" class="single">
     <section class="card ref">
@@ -645,6 +772,7 @@
         <li><b>Fill the ★ fields.</b> Everything else is optional and has a sensible default.</li>
         <li><b>Basic</b> gives the 5-segment profile, setbacks, cover check, node and station tables. <b>Advanced</b> adds the rod length and turns the same design into a rod-by-rod drilling plan, and can log as-drilled readings against it. <b>Checks</b> compares the design with bend-radius and cover rules of thumb.</li>
         <li>Use <b>% / °</b> to switch how angles are entered and shown. Drillers' pitch in % = 100 × tan(angle).</li>
+        <li><b>Pipe</b> gives the pipe specification from the API 5L grade, OD, wall thickness and density: weight per metre, volumes, buoyancy in the drilling fluid and strength. The string length defaults to your design's HDD length. <b>Units</b> converts length, area, volume, mass, force, pressure, density, flow, velocity, torque, energy, power, temperature, angle / slope and more.</li>
       </ol>
     </section>
 
@@ -705,7 +833,9 @@
   <div>
     <button class="dr-item" data-go="basic"><span class="di">📐</span>Basic profile</button>
     <button class="dr-item" data-go="advanced"><span class="di">🔩</span>Advanced · rod-by-rod</button>
+    <button class="dr-item" data-go="pipe"><span class="di">🛢️</span>Pipe spec &amp; weight</button>
     <button class="dr-item" data-go="checks"><span class="di">✅</span>Design checks</button>
+    <button class="dr-item" data-go="units"><span class="di">🔁</span>Unit converter</button>
     <button class="dr-item" data-go="info"><span class="di">📖</span>Guide &amp; formulas</button>
     <div class="dr-sep"></div>
     <button class="dr-item" id="drShareApp"><span class="di">🔗</span>Share app link</button>
@@ -804,9 +934,12 @@ const ST={view:'basic',type:'river',unit:'deg',
   common:{ang1:'',ang2:'',R1:'',R2:'',rodL:'',rod1:''},
   per:{river:{},road:{},rail:{},canal:{},open:{}},
   chk:{od:'',fos:''},dx:'',ys:'',
-  adv:{track:false,fmt:'pct',tie:'',tol:'',readings:{}}};
+  adv:{track:false,fmt:'pct',tie:'',tol:'',readings:{}},
+  pipe:{grade:'',wt:'',rho:'',smys:'',smts:'',ct:'',crho:'',len:'',jl:'',mud:'',F:'',E:''},
+  units:{cat:'length',from:'m',to:'ft',val:'1'}};
+const VIEWS=['basic','advanced','pipe','checks','units','info'];
 function save(){
-  try{ localStorage.setItem(KEY,JSON.stringify({view:ST.view,type:ST.type,unit:ST.unit,common:ST.common,per:ST.per,chk:ST.chk,dx:ST.dx,ys:ST.ys,adv:ST.adv})); }catch(e){}
+  try{ localStorage.setItem(KEY,JSON.stringify({view:ST.view,type:ST.type,unit:ST.unit,common:ST.common,per:ST.per,chk:ST.chk,dx:ST.dx,ys:ST.ys,adv:ST.adv,pipe:ST.pipe,units:ST.units})); }catch(e){}
 }
 /* only number-like strings survive from storage or a shared link */
 const NUMLIKE=/^\s*-?(\d+\.?\d*|\.\d+)?(e[-+]?\d+)?\s*$/i;
@@ -817,7 +950,7 @@ function load(){
   let s=null;
   try{ s=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
   if(s&&typeof s==='object'){
-    if(['basic','advanced','checks','info'].indexOf(s.view)>=0) ST.view=s.view;
+    if(VIEWS.indexOf(s.view)>=0) ST.view=s.view;
     if(TYPES[s.type]) ST.type=s.type;
     if(s.unit==='pct'||s.unit==='deg') ST.unit=s.unit;
     Object.assign(ST.common,cleanMap(s.common,COMMON_KEYS));
@@ -830,6 +963,15 @@ function load(){
       const t=cleanMap(s.adv,['tie','tol']); ST.adv.tie=t.tie||''; ST.adv.tol=t.tol||'';
       const rd={}; if(s.adv.readings&&typeof s.adv.readings==='object') Object.keys(s.adv.readings).forEach(k=>{ const v=String(s.adv.readings[k]); if(/^\d+$/.test(k)&&v.length<20&&NUMLIKE.test(v)) rd[k]=v; });
       ST.adv.readings=rd;
+    }
+    if(s.pipe&&typeof s.pipe==='object'){
+      ST.pipe=Object.assign(blankPipe(),cleanMap(s.pipe,PIPE_KEYS));
+      if(GRADE_BY[s.pipe.grade]) ST.pipe.grade=s.pipe.grade;
+    }
+    if(s.units&&typeof s.units==='object'&&UCAT_BY[s.units.cat]){
+      const c=UCAT_BY[s.units.cat]; ST.units.cat=c.id;
+      ST.units.from=uFind(c,s.units.from)?s.units.from:c.d[0]; ST.units.to=uFind(c,s.units.to)?s.units.to:c.d[1];
+      const v=cleanMap(s.units,['val']); ST.units.val=v.val!=null?v.val:'1';
     }
     return true;
   }
@@ -1129,6 +1271,8 @@ function renderAll(){
   if(ST.view==='basic') renderBasic(M);
   else if(ST.view==='advanced') renderAdv(M);
   else if(ST.view==='checks') renderChecks(M);
+  else if(ST.view==='pipe') renderPipe();
+  else if(ST.view==='units') renderUnits(false);
   save();
 }
 function status(M){ return (M.errs.length||M.fail.length||M.coverFail)?'bad':(M.warns.length?'warn':'ok'); }
@@ -1151,7 +1295,7 @@ function renderVerdict(M){
     (M.notes.length&&!M.errs.length?`<ul class="vnotes">${M.notes.map(x=>`<li>${x}</li>`).join('')}</ul>`:'')+'</div>';
 }
 function renderPill(M){
-  const t=TYPES[ST.type], vn={basic:'Basic',advanced:'Advanced',checks:'Checks',info:'Guide'}[ST.view];
+  const t=TYPES[ST.type], vn={basic:'Basic',advanced:'Advanced',pipe:'Pipe',checks:'Checks',units:'Units',info:'Guide'}[ST.view];
   $('#fpill').innerHTML=`<span aria-hidden="true">⚙️</span><span class="pt">${t.name} · ${vn}</span><span class="dot ${status(M)}"></span>`;
 }
 const kpi=(k,v,u,hi,dp)=>`<div class="kpi${hi?' hi':''}"><div class="k">${k}</div><div class="v">${typeof v==='string'?v:fmt(v,dp)}${u?`<small>${u}</small>`:''}</div></div>`;
@@ -1339,6 +1483,215 @@ function renderChecks(M){
       `<div class="kv"><span class="lab">Exit curve (R2 ${fmt(R2,0)} m)</span><span class="val">${fmt(s2,3)}° / rod</span></div>`+
       `<div class="kv"><span class="lab">Rods through entry curve</span><span class="val">${fmt(angDeg('ang1')/s1,1)}</span></div>`;
   } else $('#ck3').innerHTML='<p class="sub">Enter a rod length (Advanced page) and an entry ROC.</p>';
+}
+
+/* ============================ Pipe specification ============================ */
+/* API 5L SMYS / SMTS, MPa (PSL1 A25–X70; PSL2 minimums X80–X120) */
+const GRADES=[
+  ['A25','A25 · L175',175,310],['A','A · L210',210,335],['B','B · L245',245,415],['X42','X42 · L290',290,415],['X46','X46 · L320',320,435],
+  ['X52','X52 · L360',360,460],['X56','X56 · L390',390,490],['X60','X60 · L415',415,520],['X65','X65 · L450',450,535],['X70','X70 · L485',485,570],
+  ['X80','X80 · L555 · PSL2',555,625],['X90','X90 · L625 · PSL2',625,695],['X100','X100 · L690 · PSL2',690,760],['X120','X120 · L830 · PSL2',830,915],
+  ['custom','Custom SMYS / SMTS',NaN,NaN],['none','Not steel · no grade',NaN,NaN]];
+const GRADE_BY={}; GRADES.forEach(g=>{ GRADE_BY[g[0]]=g; });
+/* NPS, OD mm, OD in (ASME B36.10M / API 5L) */
+const NPS=[['½',21.3,0.84],['¾',26.7,1.05],['1',33.4,1.315],['1¼',42.2,1.66],['1½',48.3,1.9],['2',60.3,2.375],['2½',73,2.875],['3',88.9,3.5],['4',114.3,4.5],
+  ['5',141.3,5.563],['6',168.3,6.625],['8',219.1,8.625],['10',273.1,10.75],['12',323.9,12.75],['14',355.6,14],['16',406.4,16],['18',457,18],['20',508,20],
+  ['22',559,22],['24',610,24],['26',660,26],['28',711,28],['30',762,30],['32',813,32],['34',864,34],['36',914,36],['40',1016,40],['42',1067,42],['48',1219,48]];
+const WTS=[[3.18,'1/8"'],[3.96,'5/32"'],[4.78,'3/16"'],[5.56,'7/32"'],[6.35,'1/4"'],[7.14,'9/32"'],[7.92,'5/16"'],[8.18,'0.322"'],[8.74,'11/32"'],[9.53,'3/8"'],
+  [10.31,'13/32"'],[11.13,'7/16"'],[11.91,'15/32"'],[12.7,'1/2"'],[14.27,'9/16"'],[15.88,'5/8"'],[17.48,'11/16"'],[19.05,'3/4"'],[20.62,'13/16"'],[22.23,'7/8"'],[23.83,'15/16"'],[25.4,'1"']];
+const PIPE_KEYS=['wt','rho','smys','smts','ct','crho','len','jl','mud','F','E'];
+const PLAB={wt:'Wall thickness',rho:'Density',smys:'SMYS',smts:'SMTS',ct:'Coating thickness',crho:'Coating density',len:'String length',jl:'Joint length',mud:'Drilling fluid density',F:'Design factor',E:'Elastic modulus'};
+const G0=9.80665, LBFT=0.45359237/0.3048, MPA_PSI=1e6/6894.757293168;
+const blankPipe=()=>({grade:'',wt:'',rho:'',smys:'',smts:'',ct:'',crho:'',len:'',jl:'',mud:'',F:'',E:''});
+function pRaw(k){ if(k==='od') return String(ST.chk.od||''); return ST.pipe[k]==null?'':String(ST.pipe[k]); }
+function pSet(k,v){ if(k==='od') ST.chk.od=v; else ST.pipe[k]=v; }
+function pNum(k){ const s=pRaw(k).trim(); if(s==='') return NaN; const v=Number(s); return isFinite(v)?v:NaN; }
+const pipeEmpty=()=>!ST.pipe.grade&&!String(ST.pipe.wt).trim()&&!String(ST.pipe.rho).trim();
+function loadPipeExample(forceOD){
+  ST.pipe=Object.assign(blankPipe(),{grade:'X52',wt:'9.53',rho:'7850'});
+  if(forceOD||!String(ST.chk.od||'').trim()) ST.chk.od='406.4';
+}
+function pipeModel(){
+  const R={errs:[],bad:new Set()};
+  const need=(k,c,m)=>{ if(!c){ R.bad.add(k); R.errs.push(m); } };
+  const gr=GRADE_BY[ST.pipe.grade];
+  need('grade',!!gr,'Choose the API 5L grade (or “Not steel”).');
+  const OD=pNum('od'), t=pNum('wt'), rho=pNum('rho');
+  need('od',OD>0,'Outside diameter is required.');
+  need('wt',t>0,'Wall thickness is required.');
+  if(OD>0&&t>0) need('wt',2*t<OD,'Wall thickness must be less than half the OD.');
+  need('rho',rho>0,'Material density is required.');
+  let smys=NaN, smts=NaN;
+  if(gr&&gr[0]==='custom'){ smys=pNum('smys'); smts=pNum('smts'); need('smys',smys>0,'Enter the SMYS for a custom grade.'); }
+  else if(gr){ smys=gr[2]; smts=gr[3]; }
+  ['ct','crho'].forEach(k=>{ if(isFinite(pNum(k))) need(k,pNum(k)>=0,`${PLAB[k]} can't be negative.`); });
+  ['len','jl','mud','F','E'].forEach(k=>{ if(isFinite(pNum(k))) need(k,pNum(k)>0,`${PLAB[k]} must be greater than 0.`); });
+  if(R.errs.length) return R;
+
+  const ID=OD-2*t, D=OD/1000, d=ID/1000;
+  const As=Math.PI/4*(D*D-d*d), Ai=Math.PI/4*d*d;
+  const w=rho*As, wApi=0.02466*(OD-t)*t;
+  const ct=pNum('ct')>0?pNum('ct'):0, crho=pNum('crho')>0?pNum('crho'):1440;
+  const Dc=D+2*ct/1000, Ao=Math.PI/4*Dc*Dc, wc=crho*(Ao-Math.PI/4*D*D);
+  const mud=pNum('mud')>0?pNum('mud'):1200;
+  const buoy=mud*Ao, wE=w+wc-buoy, wW=1000*Ai, wF=wE+wW;
+  const dsg=CUR&&CUR.P&&!CUR.errs.length&&!CUR.fail.length?CUR.P.total:NaN;
+  const L=pNum('len')>0?pNum('len'):dsg, lenSrc=pNum('len')>0?'input':(isFinite(dsg)?'design':'');
+  const jl=pNum('jl')>0?pNum('jl'):12;
+  const I=Math.PI/64*(Math.pow(D,4)-Math.pow(d,4)), Z=I/(D/2), rg=Math.sqrt(I/As);
+  const F=pNum('F')>0?pNum('F'):0.72, E=pNum('E')>0?pNum('E'):207000;
+  const steel=gr[0]!=='none';
+  const burst=2*smys*t/OD, dp=F*burst, Tcap=0.9*smys*1e6*As;
+  const r1=num('R1'), r2=isFinite(num('R2'))?num('R2'):r1, Rd=Math.min(r1,r2);
+  const sb=Rd>0?E*D/(2*Rd):NaN;
+  return Object.assign(R,{gr,steel,OD,t,rho,ID,D,d,As,Ai,w,wApi,ct,crho,Dc,Ao,wc,mud,buoy,wE,wW,wF,L,lenSrc,dsg,jl,I,Z,rg,F,E,smys,smts,burst,dp,Tcap,Rd,sb});
+}
+function kvRow(lab,val,cls){ return `<div class="kv"><span class="lab">${lab}</span><span class="val${cls?' '+cls:''}">${val}</span></div>`; }
+function pipeSpecText(P){
+  const g=P.steel?`API 5L ${P.gr[1].replace(' · PSL2',' PSL2')}`:'Non-steel pipe';
+  const L=[`HDD Profile Studio — pipe specification`,
+    `${g}${P.steel?`, SMYS ${fmt(P.smys,0)} MPa`+(isFinite(P.smts)?` / SMTS ${fmt(P.smts,0)} MPa`:''):''}, density ${fmt(P.rho,0)} kg/m³`,
+    `OD ${fmt(P.OD)} mm (${fmt(P.OD/25.4,3)} in) × WT ${fmt(P.t)} mm (${fmt(P.t/25.4,3)} in), ID ${fmt(P.ID)} mm, D/t ${fmt(P.OD/P.t,1)}`,
+    `Weight ${fmt(P.w)} kg/m (${fmt(P.w/LBFT)} lb/ft)`+(P.ct>0?`, coated ${fmt(P.w+P.wc)} kg/m`:''),
+    `Internal volume ${fmt(P.Ai*1000)} L/m`];
+  if(isFinite(P.L)) L.push(`String ${fmt(P.L)} m: ${fmt((P.w+P.wc)*P.L/1000)} t, ${Math.ceil(P.L/P.jl-1e-9)} joints of ${fmt(P.jl,1)} m, ${fmt(P.Ai*P.L)} m³ to fill`);
+  L.push(`In ${fmt(P.mud,0)} kg/m³ fluid: empty ${fmt(P.wE)} kg/m, water-filled ${fmt(P.wF)} kg/m`);
+  if(P.steel) L.push(`Barlow burst ${fmt(P.burst*10,1)} bar, design (F ${fmt(P.F)}) ${fmt(P.dp*10,1)} bar, 90% SMYS pull ${fmt(P.Tcap/1000,0)} kN`);
+  return L.join('\n');
+}
+function fillPipeInputs(){
+  $$('#pipeView [data-p]').forEach(i=>{ i.value=pRaw(i.getAttribute('data-p')); });
+}
+function renderPipe(){
+  const P=pipeModel();
+  $$('#pipeView .cgr').forEach(e=>e.classList.toggle('hidden',ST.pipe.grade!=='custom'));
+  $$('#pipeView [data-p]').forEach(i=>i.classList.toggle('err',P.bad.has(i.getAttribute('data-p'))));
+  const gr=GRADE_BY[ST.pipe.grade];
+  $('#p_gradeHint').textContent=gr&&isFinite(gr[2])?`SMYS ${gr[2]} MPa (${fmt(gr[2]*MPA_PSI/1000,1)} ksi) · SMTS ${gr[3]} MPa (${fmt(gr[3]*MPA_PSI/1000,1)} ksi)`:(gr&&gr[0]==='none'?'Strength checks are skipped':'Specified minimum yield / tensile');
+  const od=pNum('od'), np=NPS.find(n=>Math.abs(n[1]-od)<0.05);
+  $('#p_nps').value=np?String(np[1]):'';
+  $('#p_odHint').textContent=od>0?`${fmt(od/25.4,3)} in${np?` · NPS ${np[0]}`:''} · shared with Checks`:'Same OD as the Checks tab';
+  const wt=pNum('wt'); $('#p_wtHint').textContent=wt>0?`${fmt(wt/25.4,3)} in · tap for common sizes`:'Tap for common thicknesses';
+  const mud=pNum('mud')>0?pNum('mud'):1200; $('#p_mudHint').textContent=`≈ ${fmt(mud/119.826427316,2)} ppg · SG ${fmt(mud/1000,2)}`;
+  const dsg=CUR&&CUR.P&&!CUR.errs.length&&!CUR.fail.length?CUR.P.total:NaN;
+  $('#p_len').placeholder=isFinite(dsg)?`= HDD length ${fmt(dsg,1)}`:'e.g. 520';
+  $('#p_lenHint').textContent=isFinite(dsg)?`Blank = your design's HDD length (${fmt(dsg)} m)`:'No feasible design yet: enter a length';
+  $$('#rhoChips [data-rho]').forEach(b=>b.classList.toggle('on',Number(b.getAttribute('data-rho'))===pNum('rho')));
+
+  const pv=$('#pipeVerdict');
+  if(P.errs.length){
+    pv.className='verdict bad'; pv.innerHTML=`<div class="vic">!</div><div><div class="vt">Fill the required fields</div><ul>${P.errs.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+    $('#pipeOut').classList.add('hidden'); return;
+  }
+  pv.className=''; pv.innerHTML=''; $('#pipeOut').classList.remove('hidden');
+  const g=P.steel?`API 5L <b>${P.gr[1]}</b>`:'<b>Non-steel</b> pipe';
+  $('#p_spec').innerHTML=`${g} · OD <b>${fmt(P.OD)}</b> mm (${fmt(P.OD/25.4,3)}") × WT <b>${fmt(P.t)}</b> mm (${fmt(P.t/25.4,3)}") · ID ${fmt(P.ID)} mm · <b>${fmt(P.w)} kg/m</b>`;
+
+  let k=kpi('Weight per metre',P.w,'kg/m',1)+kpi('Weight per foot',P.w/LBFT,'lb/ft')+kpi('Line load',P.w*G0/1000,'kN/m',0,3);
+  if(P.steel) k+=kpi('API 5L formula (7850)',P.wApi,'kg/m');
+  if(P.ct>0) k+=kpi('Coated weight',P.w+P.wc,'kg/m');
+  k+=kpi(`Weight per ${fmt(P.jl,1)} m joint`,(P.w+P.wc)*P.jl,'kg');
+  if(isFinite(P.L)){ k+=kpi(`Joints for ${fmt(P.L,1)} m`,String(Math.ceil(P.L/P.jl-1e-9)))+kpi('String weight',(P.w+P.wc)*P.L/1000,'t',1); }
+  $('#p_wKpis').innerHTML=k;
+
+  let gk=kpi(`Inside diameter · ${fmt(P.ID/25.4,3)}"`,P.ID,'mm')+kpi('D/t ratio',P.OD/P.t,'',0,1)+kpi('Steel area',P.As*1e4,'cm²')+
+    kpi('Moment of inertia',P.I*1e8,'cm⁴',0,0)+kpi('Section modulus',P.Z*1e6,'cm³',0,1)+kpi('Radius of gyration',P.rg*100,'cm');
+  if(P.ct>0) gk+=kpi('Coated OD',P.Dc*1000,'mm');
+  $('#p_gKpis').innerHTML=gk;
+
+  let vk=kpi('Internal volume',P.Ai*1000,'L/m',1)+kpi('Steel volume',P.As*1000,'L/m')+kpi('Displaced volume',P.Ao*1000,'L/m');
+  if(isFinite(P.L)) vk+=kpi('String internal',P.Ai*P.L,'m³',1)+kpi('String internal',P.Ai*P.L/0.158987294928,'bbl',0,1)+kpi('String internal',P.Ai*P.L/0.003785411784,'US gal',0,0)+kpi('String steel',P.As*P.L,'m³');
+  $('#p_vKpis').innerHTML=vk;
+
+  const floats=P.wE<0;
+  let b=kvRow('Drilling fluid',`${fmt(P.mud,0)} kg/m³<small>${fmt(P.mud/119.826427316,2)} ppg · SG ${fmt(P.mud/1000,2)}</small>`)+
+    kvRow('Buoyancy (uplift) per metre',`${fmt(P.buoy)} kg/m`)+
+    kvRow('Empty pipe in fluid',`${fmt(P.wE)} kg/m<small>${floats?'floats · net uplift':'sinks'}</small>`,floats?'warn':'good')+
+    kvRow('Water-filled pipe in fluid',`${fmt(P.wF)} kg/m<small>${P.wF<0?'still floats':'sinks'}</small>`,P.wF<0?'warn':'good');
+  if(floats) b+=kvRow('Water fill for neutral buoyancy',P.wE+P.wW>=0?`${fmt(-P.wE/P.wW*100,0)} %<small>of the internal volume</small>`:'not reachable<small>use heavier fill or ballast</small>',P.wE+P.wW>=0?'':'bad');
+  else b+=kvRow('Water fill for neutral buoyancy','not needed<small>sinks empty</small>');
+  if(isFinite(P.L)) b+=kvRow(floats?'Net uplift, empty string':'Net submerged weight, empty string',`${fmt(Math.abs(P.wE)*P.L*G0/1000,1)} kN<small>${fmt(Math.abs(P.wE)*P.L/1000,1)} t</small>`);
+  b+=`<p class="note">Negative effective weight means the empty pipe floats and rides the top of the hole during pull-back, raising drag. Filling with water (ballast) brings it towards neutral.</p>`;
+  $('#p_buoy').innerHTML=b;
+
+  $('#p_strCard').classList.toggle('hidden',!P.steel);
+  if(P.steel){
+    let s=kvRow('SMYS',`${fmt(P.smys,0)} MPa<small>${fmt(P.smys*MPA_PSI,0)} psi</small>`);
+    if(isFinite(P.smts)&&P.smts>0) s+=kvRow('SMTS',`${fmt(P.smts,0)} MPa<small>${fmt(P.smts*MPA_PSI,0)} psi</small>`);
+    s+=kvRow('Burst pressure at SMYS (Barlow)',`${fmt(P.burst*10,1)} bar<small>${fmt(P.burst*MPA_PSI,0)} psi</small>`)+
+      kvRow(`Design pressure (F = ${fmt(P.F)})`,`${fmt(P.dp*10,1)} bar<small>${fmt(P.dp*MPA_PSI,0)} psi</small>`)+
+      kvRow('Tensile capacity at 90% SMYS',`${fmt(P.Tcap/1000,0)} kN<small>${fmt(P.Tcap/1000/G0,1)} t · ${fmt(P.Tcap/4448.2216152605,0)} kip</small>`);
+    if(isFinite(P.sb)) s+=kvRow(`Bending stress at design ROC (R ${fmt(P.Rd,0)} m)`,`${fmt(P.sb,1)} MPa<small>${fmt(P.sb/P.smys*100,1)}% SMYS</small>`);
+    else s+=kvRow('Bending stress at design ROC','—<small>enter an ROC on Basic</small>');
+    $('#p_str').innerHTML=s;
+  }
+}
+
+/* ============================ Unit converter ============================ */
+const LB=0.45359237, LBF=4.4482216152605, FT=0.3048, IN=0.0254, PSI=6894.757293168, GAL=0.003785411784, BBL=42*GAL, FT3=Math.pow(FT,3);
+const UCATS=[
+  {id:'length',n:'Length',e:'📏',d:['m','ft'],u:[['m','metre',1],['km','kilometre',1e3],['cm','centimetre',1e-2],['mm','millimetre',1e-3],['µm','micrometre',1e-6],['in','inch',IN],['ft','foot',FT],['yd','yard',0.9144],['mi','mile',1609.344],['nmi','nautical mile',1852]]},
+  {id:'area',n:'Area',e:'⬛',d:['m²','ft²'],u:[['m²','square metre',1],['km²','square kilometre',1e6],['ha','hectare',1e4],['cm²','square centimetre',1e-4],['mm²','square millimetre',1e-6],['in²','square inch',IN*IN],['ft²','square foot',FT*FT],['yd²','square yard',0.9144*0.9144],['acre','acre',4046.8564224],['mi²','square mile',1609.344*1609.344]]},
+  {id:'volume',n:'Volume',e:'🧊',d:['m³','bbl'],u:[['m³','cubic metre',1],['L','litre',1e-3],['mL','millilitre / cm³',1e-6],['bbl','barrel (oil, 42 US gal)',BBL],['US gal','US gallon',GAL],['UK gal','imperial gallon',0.00454609],['ft³','cubic foot',FT3],['in³','cubic inch',Math.pow(IN,3)],['yd³','cubic yard',Math.pow(0.9144,3)]]},
+  {id:'mass',n:'Mass / weight',e:'⚖️',d:['t','lb'],u:[['kg','kilogram',1],['g','gram',1e-3],['t','tonne (metric)',1e3],['lb','pound',LB],['oz','ounce',LB/16],['sh tn','short ton (US, 2000 lb)',2000*LB],['lg tn','long ton (UK, 2240 lb)',2240*LB]]},
+  {id:'force',n:'Force',e:'💪',d:['kN','lbf'],u:[['N','newton',1],['kN','kilonewton',1e3],['MN','meganewton',1e6],['kgf','kilogram-force',G0],['tf','tonne-force (metric)',1e3*G0],['lbf','pound-force',LBF],['kip','kip (1000 lbf)',1e3*LBF],['US tonf','short ton-force (2000 lbf)',2000*LBF],['dyn','dyne',1e-5]]},
+  {id:'pressure',n:'Pressure / stress',e:'🎚️',d:['bar','psi'],u:[['Pa','pascal',1],['kPa','kilopascal',1e3],['MPa','megapascal = N/mm²',1e6],['GPa','gigapascal',1e9],['bar','bar',1e5],['mbar','millibar',100],['psi','pound per in²',PSI],['ksi','kip per in²',1e3*PSI],['atm','standard atmosphere',101325],['kgf/cm²','kgf per cm² (at)',98066.5],['mH₂O','metre of water',9806.65],['ftH₂O','foot of water',2989.06692],['mmHg','millimetre of mercury',133.322387415],['inHg','inch of mercury',3386.389],['psf','pound per ft²',LBF/(FT*FT)]]},
+  {id:'density',n:'Density / mud weight',e:'🧪',d:['kg/m³','ppg'],u:[['kg/m³','kg per m³',1],['g/cm³','g per cm³',1e3],['SG','specific gravity (water = 1)',1e3],['ppg','lb per US gal',LB/GAL],['lb/ft³','lb per ft³',LB/FT3],['lb/in³','lb per in³',LB/Math.pow(IN,3)],['t/m³','tonne per m³',1e3],['kg/L','kg per litre',1e3]]},
+  {id:'gradient',n:'Pressure gradient',e:'📉',d:['kPa/m','psi/ft'],u:[['kPa/m','kPa per metre',1e3],['bar/m','bar per metre',1e5],['bar/10 m','bar per 10 m',1e4],['psi/ft','psi per foot',PSI/FT],['Pa/m','Pa per metre',1]]},
+  {id:'flow',n:'Flow rate',e:'🌊',d:['m³/h','gpm'],u:[['m³/s','m³ per second',1],['m³/h','m³ per hour',1/3600],['m³/min','m³ per minute',1/60],['L/s','litre per second',1e-3],['L/min','litre per minute',1e-3/60],['gpm','US gal per minute',GAL/60],['UK gpm','imperial gal per minute',0.00454609/60],['bbl/min','barrel per minute',BBL/60],['bbl/h','barrel per hour',BBL/3600],['bbl/d','barrel per day',BBL/86400],['cfm','ft³ per minute',FT3/60]]},
+  {id:'velocity',n:'Speed / rate',e:'🏃',d:['m/min','ft/min'],u:[['m/s','metre per second',1],['m/min','metre per minute',1/60],['m/h','metre per hour',1/3600],['km/h','kilometre per hour',1/3.6],['ft/s','foot per second',FT],['ft/min','foot per minute',FT/60],['ft/h','foot per hour',FT/3600],['mph','mile per hour',0.44704],['kn','knot',1852/3600]]},
+  {id:'torque',n:'Torque',e:'🔧',d:['kN·m','lbf·ft'],u:[['N·m','newton metre',1],['kN·m','kilonewton metre',1e3],['kgf·m','kgf metre',G0],['lbf·ft','pound-force foot (ft·lb)',LBF*FT],['lbf·in','pound-force inch',LBF*IN],['kip·ft','kip foot',1e3*LBF*FT]]},
+  {id:'energy',n:'Energy / work',e:'⚡',d:['kWh','BTU'],u:[['J','joule',1],['kJ','kilojoule',1e3],['MJ','megajoule',1e6],['Wh','watt hour',3600],['kWh','kilowatt hour',3.6e6],['cal','calorie',4.1868],['kcal','kilocalorie',4186.8],['BTU','British thermal unit',1055.05585262],['ft·lbf','foot pound-force',LBF*FT]]},
+  {id:'power',n:'Power',e:'🔋',d:['kW','hp'],u:[['W','watt',1],['kW','kilowatt',1e3],['MW','megawatt',1e6],['hp','horsepower (mechanical)',550*LBF*FT],['PS','metric horsepower',75*G0],['BTU/h','BTU per hour',1055.05585262/3600],['ft·lbf/s','ft·lbf per second',LBF*FT]]},
+  {id:'temp',n:'Temperature',e:'🌡️',d:['°C','°F'],u:[['°C','Celsius',{to:v=>v+273.15,from:k=>k-273.15}],['°F','Fahrenheit',{to:v=>(v-32)*5/9+273.15,from:k=>(k-273.15)*9/5+32}],['K','kelvin',1],['°R','Rankine',5/9]]},
+  {id:'angle',n:'Angle & slope',e:'📐',d:['°','%'],u:[['°','degree (pitch)',DEG],['%','percent slope (100·tan)',{to:v=>Math.atan(v/100),from:r=>100*Math.tan(r)}],['° inc','inclination from vertical (90° + pitch)',{to:v=>(v-90)*DEG,from:r=>90+r/DEG}],['rad','radian',1],['grad','gradian',Math.PI/200],['‰','per-mille slope',{to:v=>Math.atan(v/1000),from:r=>1000*Math.tan(r)}],['mil','mil (6400 per turn)',2*Math.PI/6400]]},
+  {id:'linmass',n:'Weight per length',e:'📦',d:['kg/m','lb/ft'],u:[['kg/m','kg per metre',1],['lb/ft','lb per foot',LB/FT],['lb/in','lb per inch',LB/IN],['lb/yd','lb per yard',LB/0.9144],['t/km','tonne per km',1],['g/m','gram per metre',1e-3]]},
+  {id:'visc',n:'Viscosity',e:'🍯',d:['cP','Pa·s'],u:[['cP','centipoise',1e-3],['mPa·s','millipascal second',1e-3],['Pa·s','pascal second',1],['P','poise',0.1],['lb/(ft·s)','lb per ft·second',LB/FT]]},
+];
+const UCAT_BY={}; UCATS.forEach(c=>{ UCAT_BY[c.id]=c; });
+const uFind=(c,s)=>c.u.find(u=>u[0]===s);
+const uTo=(u,v)=>typeof u[2]==='number'?v*u[2]:u[2].to(v);
+const uFrom=(u,b)=>typeof u[2]==='number'?b/u[2]:u[2].from(b);
+function fmtU(v){
+  if(!isFinite(v)) return '—';
+  if(v===0) return '0';
+  const a=Math.abs(v);
+  if(a>=1e12||a<1e-6) return v.toExponential(6).replace(/\.?0+e/,'e');
+  return v.toLocaleString('en-US',{maximumSignificantDigits:9});
+}
+const plainU=v=>isFinite(v)?String(+v.toPrecision(9)):'';
+function uSetCat(id,from){
+  const c=UCAT_BY[id]; if(!c) return;
+  ST.units.cat=id;
+  ST.units.from=from&&uFind(c,from)?from:c.d[0];
+  ST.units.to=c.d[1]!==ST.units.from?c.d[1]:c.d[0];
+}
+function uValue(){ const s=String(ST.units.val).trim(); const v=Number(s); return s===''||!isFinite(v)?1:v; }
+function renderUnits(full){
+  const c=UCAT_BY[ST.units.cat]||UCATS[0];
+  if(full){
+    $('#u_cats').innerHTML=UCATS.map(x=>`<button class="ucat${x.id===c.id?' on':''}" data-cat="${x.id}"><span class="e" aria-hidden="true">${x.e}</span>${x.n}</button>`).join('');
+    const opts=c.u.map(u=>`<option value="${esc(u[0])}">${esc(u[0])} — ${esc(u[1])}</option>`).join('');
+    $('#u_from').innerHTML=opts; $('#u_to').innerHTML=opts;
+    $('#u_val').value=ST.units.val;
+  }
+  $$('#u_cats .ucat').forEach(b=>b.classList.toggle('on',b.getAttribute('data-cat')===c.id));
+  $('#u_catE').textContent=c.e; $('#u_catN').textContent=c.n;
+  const uf=uFind(c,ST.units.from)||c.u[0], ut=uFind(c,ST.units.to)||c.u[1]||c.u[0];
+  $('#u_from').value=uf[0]; $('#u_to').value=ut[0];
+  const v=uValue(), base=uTo(uf,v), r=uFrom(ut,base);
+  $('#u_out').textContent=`${fmtU(r)} ${ut[0]}`;
+  const lin=typeof uf[2]==='number'&&typeof ut[2]==='number';
+  $('#u_eq').textContent=`${fmtU(v)} ${uf[0]} = ${fmtU(r)} ${ut[0]}`+(lin&&v!==1?`  ·  1 ${uf[0]} = ${fmtU(uFrom(ut,uTo(uf,1)))} ${ut[0]}`:'')+'  ·  tap to copy';
+  $('#u_res').setAttribute('data-copy',plainU(r));
+  $('#u_all').innerHTML=c.u.map(u=>{ const x=uFrom(u,base); return `<tr data-copy="${plainU(x)}" data-sym="${esc(u[0])}"${u[0]===ut[0]?' class="on"':''}><td class="l">${esc(u[0])}</td><td class="l muted">${esc(u[1])}</td><td>${fmtU(x)}</td></tr>`; }).join('');
+}
+function uSearch(q){
+  q=q.trim().toLowerCase(); const box=$('#u_found');
+  if(!q){ box.innerHTML=''; return; }
+  const hits=[];
+  UCATS.forEach(c=>c.u.forEach(u=>{ if(u[0].toLowerCase().indexOf(q)>=0||u[1].toLowerCase().indexOf(q)>=0) hits.push([c,u]); }));
+  box.innerHTML=hits.length?hits.slice(0,14).map(([c,u])=>`<button class="chip" data-cat="${c.id}" data-u="${esc(u[0])}">${esc(u[0])} · ${c.n}</button>`).join(''):'<span class="hint">No unit found</span>';
 }
 
 /* ============================ Profile drawing (SVG) ============================ */
@@ -1559,10 +1912,17 @@ function setView(v){
   const design=v==='basic'||v==='advanced';
   $('#designView').classList.toggle('hidden',!design);
   $('#checksView').classList.toggle('hidden',v!=='checks');
+  $('#pipeView').classList.toggle('hidden',v!=='pipe');
+  $('#unitsView').classList.toggle('hidden',v!=='units');
   $('#infoView').classList.toggle('hidden',v!=='info');
   $('#basicOut').classList.toggle('hidden',v!=='basic');
   $('#advOut').classList.toggle('hidden',v!=='advanced');
   if(v==='checks'){ $('#c_od').value=ST.chk.od; $('#c_fos').value=ST.chk.fos; }
+  if(v==='pipe'){
+    if(pipeEmpty()){ loadPipeExample(false); toast('Example pipe loaded: 16" × 9.53 mm API 5L X52. Edit as needed.'); }
+    fillPipeInputs();
+  }
+  if(v==='units') renderUnits(true);
   if(design) renderForm();
   renderAll();
 }
@@ -1637,6 +1997,27 @@ $('#fpill').addEventListener('click',()=>{
 /* checks inputs */
 $('#c_od').addEventListener('input',e=>{ ST.chk.od=e.target.value; renderAll(); });
 $('#c_fos').addEventListener('input',e=>{ ST.chk.fos=e.target.value; renderAll(); });
+/* pipe inputs */
+$('#p_grade').innerHTML='<option value="">— choose grade —</option>'+GRADES.map(g=>`<option value="${g[0]}">${esc(g[1])}${isFinite(g[2])?` — ${g[2]} MPa`:''}</option>`).join('');
+$('#p_nps').innerHTML='<option value="">— NPS / OD —</option>'+NPS.map(n=>`<option value="${n[1]}">NPS ${n[0]} · ${fmt(n[1],1)} mm (${n[2]}")</option>`).join('');
+$('#wtList').innerHTML=WTS.map(w=>`<option value="${w[0]}" label="${w[1]}"></option>`).join('');
+$('#pipeView').addEventListener('input',e=>{ const k=e.target.getAttribute('data-p'); if(!k||e.target.tagName==='SELECT') return; pSet(k,e.target.value); renderPipe(); save(); });
+$('#p_grade').addEventListener('change',e=>{ ST.pipe.grade=e.target.value; renderPipe(); save(); });
+$('#p_nps').addEventListener('change',e=>{ if(!e.target.value) return; ST.chk.od=e.target.value; $('#p_od').value=ST.chk.od; renderPipe(); save(); });
+$('#rhoChips').addEventListener('click',e=>{ const b=e.target.closest('[data-rho]'); if(!b) return; ST.pipe.rho=b.getAttribute('data-rho'); $('#p_rho').value=ST.pipe.rho; renderPipe(); save(); });
+$('#p_example').addEventListener('click',()=>{ loadPipeExample(true); fillPipeInputs(); renderPipe(); save(); toast('Example pipe loaded'); });
+$('#p_copy').addEventListener('click',async()=>{ const P=pipeModel(); if(P.errs.length){ toast('Fill the required fields first'); return; } toast(await copyText(pipeSpecText(P))?'Pipe specification copied':'Copy failed'); });
+/* unit converter */
+$('#u_cats').addEventListener('click',e=>{ const b=e.target.closest('[data-cat]'); if(!b) return; uSetCat(b.getAttribute('data-cat')); renderUnits(true); save(); });
+$('#u_found').addEventListener('click',e=>{ const b=e.target.closest('[data-cat]'); if(!b) return; uSetCat(b.getAttribute('data-cat'),b.getAttribute('data-u')); $('#u_find').value=''; $('#u_found').innerHTML=''; renderUnits(true); save(); $('#u_val').focus(); });
+$('#u_find').addEventListener('input',e=>uSearch(e.target.value));
+$('#u_val').addEventListener('input',e=>{ ST.units.val=e.target.value; renderUnits(false); save(); });
+$('#u_from').addEventListener('change',e=>{ ST.units.from=e.target.value; renderUnits(false); save(); });
+$('#u_to').addEventListener('change',e=>{ ST.units.to=e.target.value; renderUnits(false); save(); });
+$('#u_swap').addEventListener('click',()=>{ const f=ST.units.from; ST.units.from=ST.units.to; ST.units.to=f; renderUnits(false); save(); });
+const copyCell=async el=>{ const v=el&&el.getAttribute('data-copy'); if(!v) return; toast(await copyText(v)?`Copied ${v}`:'Copy failed'); };
+$('#u_res').addEventListener('click',()=>copyCell($('#u_res')));
+$('#u_all').addEventListener('click',e=>copyCell(e.target.closest('tr')));
 /* stations & exports */
 $('#dxIn').addEventListener('input',e=>{ ST.dx=e.target.value; if(CUR&&CUR.P&&!CUR.fail.length) renderStations(CUR); save(); });
 [['#ysIn','#ysIn2'],['#ysIn2','#ysIn']].forEach(([a,o])=>$(a).addEventListener('input',e=>{ ST.ys=e.target.value; $(o).value=ST.ys; save(); }));

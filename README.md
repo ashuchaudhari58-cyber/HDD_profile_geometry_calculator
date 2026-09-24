@@ -23,6 +23,17 @@ Fix a setback yourself when the rig position is set by the site, and the cover c
 
 It also produces a drilling programme ("rod 11: entry curve starts, steer ≈ 1.09°/rod"), CSV download and AutoCAD export. You can **log as-drilled readings** (% pitch, ° pitch or ° inclination). They are computed by the average-angle method and compared against the plan, with an alarm when the bore goes off plan.
 
+**Pipe page.** Pick the API 5L grade (A25 to X120, custom SMYS/SMTS, or non-steel), the OD (or an NPS quick pick), the wall thickness and the material density. It gives:
+- weight per metre (kg/m, lb/ft, kN/m, plus the API 5L plain-end formula check), per joint and for the whole string
+- ID, D/t, steel area, moment of inertia and section modulus
+- internal, steel and displaced volumes (water to fill the string in m³ / bbl / US gal)
+- buoyancy in the drilling fluid: empty and water-filled effective weight, and the water fill needed for neutral buoyancy
+- Barlow burst and design pressure, tensile capacity at 90% SMYS, and bending stress at the design ROC
+
+Optional coating is included. The string length defaults to the HDD length of your design, and "Copy spec" puts a text summary on the clipboard.
+
+**Units page.** A universal converter covering length, area, volume, mass, force, pressure/stress, density/mud weight, pressure gradient, flow rate, speed, torque, energy, power, temperature, angle/slope (incl. % pitch and inclination), weight per length and viscosity. It has unit search, a swap button and an "all units" table.
+
 **Checks page.** Minimum bend radius (1000 × OD × FOS), minimum cover (max of 5 × OD and 4.6 m) and steering per rod, each checked live against the design.
 
 **Other features:**
