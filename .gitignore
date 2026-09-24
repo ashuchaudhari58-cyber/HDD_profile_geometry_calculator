@@ -1,3 +1,9 @@
 Thumbs.db
 .DS_Store
 *.log
+
+# APK build output and signing key: never publish
+hdd-apk-signed/
+*.keystore
+*.jks
+signing-key-info.txt

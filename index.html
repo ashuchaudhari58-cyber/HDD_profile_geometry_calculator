@@ -1,741 +1,1702 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-<meta name="theme-color" content="#010102" />
-<meta name="description" content="Offline HDD (Horizontal Directional Drilling) crossing profile geometry calculator — segment lengths, depths, node coordinates and feasibility." />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070d1a">
+<meta name="description" content="HDD crossing profile designer — river, road, railway and canal crossings. Minimum entry/exit setback from required cover, 5-segment bore profile, and a rod-by-rod drilling plan with pitch, depth and away distance.">
 <title>HDD Profile Studio</title>
-<link rel="manifest" href="manifest.webmanifest" />
-<link rel="icon" href="icons/LOGO.svg" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="icons/icon-192.png" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="HDD Profile" />
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HDD Profile">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap">
+<script>
+/* apply the saved theme before first paint */
+(function(){try{var t=localStorage.getItem('hdd-profile-theme-v1');if(t!=='light'&&t!=='dark'&&t!=='hc'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
 <style>
   /* ============ Design tokens — dark (default) ============ */
-  :root{
-    --primary:#5e6ad2; --primary-hover:#828fff; --primary-focus:#5e69d1;
-    --on-primary:#ffffff;
-    --ink:#f7f8f8; --ink-muted:#d0d6e0; --ink-subtle:#8a8f98; --ink-tertiary:#62666d;
-    --canvas:#010102; --s1:#0f1011; --s2:#141516; --s3:#18191a; --s4:#191a1b;
-    --hair:#23252a; --hair-strong:#34343a; --hair-tert:#3e3e44;
-    --success:#27a644; --success-bg:#0e1f13; --success-text:#7fe0a0; --success-border:#1f5233;
-    --danger:#eb5757;  --danger-bg:#241012;  --danger-text:#f6a2a2;  --danger-border:#5a2226;
-    --warn:#f2994a;    --warn-bg:#241a0f;    --warn-text:#f7b975;    --warn-border:#5a3a1f;
-    --surface-shadow: none;
-    --scrim: rgba(1,1,2,0.82); --scrim-strong: rgba(1,1,2,0.9);
-    --focus-ring: rgba(94,105,210,0.28); --err-ring: rgba(235,87,87,0.22);
-    --earth-tint: rgba(94,105,210,0.05);
-    --r-xs:4px; --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-pill:9999px;
-    --sp-xxs:4px; --sp-xs:8px; --sp-sm:12px; --sp-md:16px; --sp-lg:24px; --sp-xl:32px;
-    --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Inter,system-ui,sans-serif;
-    --mono:ui-monospace,"SF Mono","JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
-    --maxw:720px;
+  :root,:root[data-theme="dark"]{
+    --bg:#070d1a; --bg-grid:rgba(120,160,255,0.045);
+    --hero-a:#0f2a4a; --hero-b:#0a1a31; --hero-border:rgba(56,139,253,0.28);
+    --card:#0e1728; --card-2:#0b1323; --card-border:#1a2742; --card-border-2:#243352; --nav-bg:rgba(6,12,24,0.55);
+    --ink:#e8eef7; --ink-2:#b9c5d6; --ink-3:#8190a8; --ink-4:#5a6982; --title-ink:#ffffff;
+    --accent:#00d4ff; --accent-ink:#03121c; --accent-soft:rgba(0,212,255,0.12); --accent-border:rgba(0,212,255,0.45); --accent-text:#5fe3ff;
+    --purple:#a78bfa; --purple-soft:rgba(139,92,246,0.13); --purple-text:#c9b8ff; --purple-sub:#9489cf; --purple-dot:#c084fc;
+    --green-soft:rgba(16,185,129,0.14); --green-text:#34d399; --green-border:rgba(16,185,129,0.42);
+    --orange:#ff7a3d; --star:#ff4d6d;
+    --danger:#f43f5e; --danger-soft:rgba(244,63,94,0.11); --danger-text:#fda4af; --danger-border:rgba(244,63,94,0.45);
+    --warn:#f59e0b;   --warn-soft:rgba(245,158,11,0.11);  --warn-text:#fcd34d;   --warn-border:rgba(245,158,11,0.45);
+    --ok:#22c55e;     --ok-soft:rgba(34,197,94,0.11);     --ok-text:#86efac;     --ok-border:rgba(34,197,94,0.42);
+    --input-bg:#091120; --input-border:#1e2b45; --ph:#4a5a75;
+    --title-glow:0 0 18px rgba(0,212,255,0.55),0 0 2px rgba(0,212,255,0.6);
+    --logo-glow:0 0 28px rgba(0,212,255,0.35);
+    --shadow:0 10px 30px rgba(0,0,0,0.35);
+    --pill-bg:rgba(9,20,36,0.94); --pill-glow:0 0 18px rgba(0,212,255,0.25),0 8px 24px rgba(0,0,0,0.45);
+    --scrollbar:#243352;
+    /* plot */
+    --p-bg:#091224; --p-grid:rgba(120,150,200,0.12); --p-text:#7f8da6; --p-label:#d2dcea;
+    --p-earth:rgba(150,110,60,0.20); --p-earth-line:#b08b5a; --p-water:rgba(0,150,255,0.28); --p-water-line:#38bdf8;
+    --p-bed:#9a7650; --p-cover:#ff5d73; --p-tan:#00d4ff; --p-arc:#ffb547; --p-node:#e8eef7; --p-actual:#f472b6;
+    --p-road:#39414f; --p-road-line:#facc15; --p-rail:#9aa3b2; --p-ballast:rgba(160,160,175,0.30);
+    --p-dim:#8fb3d9; --p-rig:#facc15; --p-scour:#c08457; --p-glow:rgba(0,212,255,0.22);
   }
-  /* ============ Design tokens — light ============ */
+  /* ============ Light ============ */
   :root[data-theme="light"]{
-    --primary:#5e6ad2; --primary-hover:#4b57c4; --primary-focus:#4b57c4;
-    --on-primary:#ffffff;
-    --ink:#15161a; --ink-muted:#4b4f58; --ink-subtle:#71767f; --ink-tertiary:#9a9ea6;
-    --canvas:#f4f5f7; --s1:#ffffff; --s2:#f1f2f5; --s3:#e9eaee; --s4:#e3e5ea;
-    --hair:#e2e4e9; --hair-strong:#d0d3da; --hair-tert:#c3c6ce;
-    --success:#1c8a3c; --success-bg:#e9f7ee; --success-text:#177a34; --success-border:#bfe6cc;
-    --danger:#d64545;  --danger-bg:#fdecec;  --danger-text:#c23434;  --danger-border:#f6c8c8;
-    --warn:#c9760f;    --warn-bg:#fdf1e2;    --warn-text:#a5620c;    --warn-border:#f3ddb8;
-    --surface-shadow: 0 1px 2px rgba(16,24,40,0.06), 0 2px 6px rgba(16,24,40,0.05);
-    --scrim: rgba(244,245,247,0.86); --scrim-strong: rgba(244,245,247,0.92);
-    --focus-ring: rgba(75,87,196,0.22); --err-ring: rgba(214,69,69,0.18);
-    --earth-tint: rgba(94,105,210,0.06);
+    --bg:#edf2f9; --bg-grid:rgba(20,60,120,0.05);
+    --hero-a:#ffffff; --hero-b:#e4eef9; --hero-border:#cddbee;
+    --card:#ffffff; --card-2:#f5f8fc; --card-border:#dbe4f0; --card-border-2:#cbd7e8; --nav-bg:#ffffff;
+    --ink:#0d1b2e; --ink-2:#33455d; --ink-3:#5b6b82; --ink-4:#8593a8; --title-ink:#0b2545;
+    --accent:#0891b2; --accent-ink:#ffffff; --accent-soft:rgba(8,145,178,0.09); --accent-border:rgba(8,145,178,0.45); --accent-text:#0e7490;
+    --purple:#8b5cf6; --purple-soft:rgba(139,92,246,0.08); --purple-text:#6d28d9; --purple-sub:#7a6aa6; --purple-dot:#8b5cf6;
+    --green-soft:#dcfce7; --green-text:#047857; --green-border:#86efac;
+    --orange:#ea580c; --star:#e11d48;
+    --danger:#e11d48; --danger-soft:#fff1f2; --danger-text:#be123c; --danger-border:#fecdd3;
+    --warn:#d97706;   --warn-soft:#fffbeb;   --warn-text:#b45309;   --warn-border:#fde68a;
+    --ok:#16a34a;     --ok-soft:#f0fdf4;     --ok-text:#15803d;     --ok-border:#bbf7d0;
+    --input-bg:#f8fbfe; --input-border:#c8d4e5; --ph:#9aa8bb;
+    --title-glow:0 0 14px rgba(8,145,178,0.22);
+    --logo-glow:0 6px 20px rgba(8,145,178,0.25);
+    --shadow:0 1px 2px rgba(16,24,40,0.05),0 6px 18px rgba(16,24,40,0.06);
+    --pill-bg:rgba(255,255,255,0.95); --pill-glow:0 6px 20px rgba(8,145,178,0.18);
+    --scrollbar:#cbd7e8;
+    --p-bg:#f7fafd; --p-grid:rgba(30,60,110,0.09); --p-text:#6b7a90; --p-label:#1e2b3d;
+    --p-earth:rgba(170,120,60,0.14); --p-earth-line:#8a6a3f; --p-water:rgba(14,140,230,0.20); --p-water-line:#0284c7;
+    --p-bed:#7a5a35; --p-cover:#e11d48; --p-tan:#0891b2; --p-arc:#d97706; --p-node:#0d1b2e; --p-actual:#db2777;
+    --p-road:#374151; --p-road-line:#eab308; --p-rail:#6b7280; --p-ballast:rgba(120,120,130,0.30);
+    --p-dim:#35608f; --p-rig:#ca8a04; --p-scour:#a16207; --p-glow:rgba(8,145,178,0.16);
   }
+  /* ============ High contrast ============ */
+  :root[data-theme="hc"]{
+    --bg:#000000; --bg-grid:rgba(255,255,255,0.07);
+    --hero-a:#000000; --hero-b:#000000; --hero-border:#ffffff;
+    --card:#000000; --card-2:#000000; --card-border:#ffffff; --card-border-2:#ffffff; --nav-bg:#000000;
+    --ink:#ffffff; --ink-2:#ffffff; --ink-3:#e8e8e8; --ink-4:#d0d0d0; --title-ink:#ffffff;
+    --accent:#ffd400; --accent-ink:#000000; --accent-soft:rgba(255,212,0,0.16); --accent-border:#ffd400; --accent-text:#ffd400;
+    --purple:#00ffff; --purple-soft:rgba(0,255,255,0.13); --purple-text:#00ffff; --purple-sub:#c2ffff; --purple-dot:#00ffff;
+    --green-soft:#002b12; --green-text:#4dff88; --green-border:#4dff88;
+    --orange:#ffb000; --star:#ff6b6b;
+    --danger:#ff5c5c; --danger-soft:#2a0000; --danger-text:#ff9a9a; --danger-border:#ff5c5c;
+    --warn:#ffd400;   --warn-soft:#2a2300;   --warn-text:#ffd400;   --warn-border:#ffd400;
+    --ok:#4dff88;     --ok-soft:#002b12;     --ok-text:#4dff88;     --ok-border:#4dff88;
+    --input-bg:#000000; --input-border:#ffffff; --ph:#bdbdbd;
+    --title-glow:none; --logo-glow:none; --shadow:none;
+    --pill-bg:#000000; --pill-glow:none; --scrollbar:#ffffff;
+    --p-bg:#000000; --p-grid:rgba(255,255,255,0.22); --p-text:#ffffff; --p-label:#ffffff;
+    --p-earth:rgba(255,255,255,0.08); --p-earth-line:#ffffff; --p-water:rgba(0,160,255,0.42); --p-water-line:#00bfff;
+    --p-bed:#ffffff; --p-cover:#ff5c5c; --p-tan:#00ffff; --p-arc:#ffd400; --p-node:#ffffff; --p-actual:#ff66ff;
+    --p-road:#555555; --p-road-line:#ffd400; --p-rail:#ffffff; --p-ballast:rgba(255,255,255,0.28);
+    --p-dim:#ffffff; --p-rig:#ffd400; --p-scour:#ffb000; --p-glow:rgba(0,255,255,0.22);
+  }
+
+  /* ============ Base ============ */
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--canvas); color:var(--ink); font-family:var(--sans);
-    font-size:16px; line-height:1.5; letter-spacing:-0.05px;
-    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
-    padding-bottom:calc(72px + env(safe-area-inset-bottom));
-    transition:background-color .2s ease, color .2s ease;
+    background:var(--bg);color:var(--ink);
+    font-family:'Rajdhani',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    font-size:17px;line-height:1.45;-webkit-font-smoothing:antialiased;
+    transition:background-color .2s ease,color .2s ease;
   }
-  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 16px;}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:linear-gradient(var(--bg-grid) 1px,transparent 1px),linear-gradient(90deg,var(--bg-grid) 1px,transparent 1px);
+    background-size:34px 34px;}
+  .mono{font-family:'Share Tech Mono',ui-monospace,Menlo,Consolas,monospace;}
+  .hidden{display:none!important;}
+  a{color:var(--accent-text);}
+  button{font-family:inherit;}
+  ::-webkit-scrollbar{width:8px;height:8px;} ::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:8px;} ::-webkit-scrollbar-track{background:transparent;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 
-  /* ============ Header ============ */
-  header{
-    position:sticky; top:0; z-index:40; background:var(--scrim);
-    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-    border-bottom:1px solid var(--hair);
-    padding-top:env(safe-area-inset-top);
-    transition:background-color .2s ease, border-color .2s ease;
-  }
-  .hbar{display:flex; align-items:center; gap:10px; height:56px; max-width:var(--maxw); margin:0 auto; padding:0 16px;}
-  .brand{display:flex; align-items:center; gap:10px; font-weight:600; letter-spacing:-0.3px; font-size:16px;
-    min-width:0; flex:1 1 auto; overflow:hidden;}
-  .logo{width:32px;height:32px;flex:0 0 32px;border-radius:9px;overflow:hidden;display:block;box-shadow:0 0 0 1px var(--hair);}
-  .logo img{width:100%;height:100%;display:block;object-fit:cover;}
-  .brand-text{min-width:0;overflow:hidden;}
-  .brand-title{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .brand small{display:block;font-size:11px;color:var(--ink-subtle);font-weight:400;letter-spacing:0;margin-top:-2px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .spacer{flex:1;min-width:8px;}
-  @media(max-width:370px){.brand small{display:none;}}
-  .iconbtn{
-    width:34px;height:34px;border-radius:var(--r-md);border:1px solid var(--hair);background:var(--s2);
-    color:var(--ink-muted);display:grid;place-items:center;cursor:pointer;flex:0 0 34px;transition:.12s;
-  }
-  .iconbtn:hover{border-color:var(--hair-strong);color:var(--ink);}
-  .iconbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;}
-  .chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;
-    padding:4px 9px;border-radius:var(--r-pill);border:1px solid var(--hair-strong);color:var(--ink-muted);white-space:nowrap;}
-  .chip .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-subtle);}
-  .chip.ok{color:var(--success-text);border-color:var(--success-border);background:var(--success-bg);}
-  .chip.ok .dot{background:var(--success);}
-  .chip.bad{color:var(--danger-text);border-color:var(--danger-border);background:var(--danger-bg);}
-  .chip.bad .dot{background:var(--danger);}
+  /* ============ Hero header ============ */
+  .hero{position:relative;z-index:2;background:linear-gradient(180deg,var(--hero-a),var(--hero-b));
+    border-bottom:1px solid var(--hero-border);padding:calc(18px + env(safe-area-inset-top)) 16px 18px;}
+  .hero-in{max-width:1180px;margin:0 auto;text-align:center;position:relative;}
+  .hamb{position:absolute;right:0;top:0;width:46px;height:46px;border-radius:13px;border:1px solid var(--card-border-2);
+    background:var(--nav-bg);color:var(--ink);display:grid;place-items:center;cursor:pointer;}
+  .hamb svg{width:22px;height:22px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;}
+  .logo-glow{width:64px;height:64px;margin:0 auto;border-radius:16px;overflow:hidden;box-shadow:var(--logo-glow);border:1px solid var(--hero-border);}
+  .logo-glow img{width:100%;height:100%;display:block;object-fit:cover;}
+  h1.title{font-weight:700;font-size:clamp(25px,6.6vw,42px);letter-spacing:.14em;line-height:1.1;margin:12px 0 4px;color:var(--title-ink);text-shadow:var(--title-glow);}
+  .tagline{font-weight:600;letter-spacing:.32em;color:var(--ink-2);font-size:clamp(11px,3.1vw,15px);}
+  .hero-rule{height:1px;max-width:560px;margin:14px auto 0;background:linear-gradient(90deg,transparent,var(--accent-border),transparent);}
+  .mainnav{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:640px;margin:14px auto 0;}
+  .mainnav button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px;border-radius:14px;
+    border:1px solid var(--card-border-2);background:var(--nav-bg);color:var(--ink-2);font-weight:700;font-size:15px;
+    letter-spacing:.04em;cursor:pointer;transition:.15s;}
+  .mainnav button .e{font-size:19px;line-height:1.1;}
+  .mainnav button.on{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent-text);box-shadow:0 0 14px var(--accent-soft);}
+  @media(min-width:560px){.mainnav button{flex-direction:row;justify-content:center;gap:8px;font-size:16.5px;padding:10px 8px;}}
+  .hero-row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;margin-top:12px;}
+
+  /* segmented controls */
+  .tseg,.useg{display:inline-flex;border:1px solid var(--card-border-2);border-radius:12px;overflow:hidden;background:var(--nav-bg);}
+  .tseg button,.useg button{font-family:'Share Tech Mono',ui-monospace,monospace;border:0;background:none;color:var(--ink-2);cursor:pointer;transition:.15s;}
+  .tseg button{font-size:13.5px;padding:9px 12px;}
+  .useg button{font-size:15px;padding:9px 15px;}
+  .tseg button.on,.useg button.on{background:var(--accent);color:var(--accent-ink);}
+
+  /* buttons */
+  .btn{font-family:'Share Tech Mono',ui-monospace,monospace;font-size:14.5px;padding:10px 15px;border-radius:12px;
+    border:1px solid var(--card-border-2);background:var(--card-2);color:var(--ink);cursor:pointer;display:inline-flex;
+    align-items:center;justify-content:center;gap:8px;transition:.15s;white-space:nowrap;}
+  .btn:hover{border-color:var(--accent-border);}
+  .btn:active{transform:scale(.98);}
+  .btn.cy{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent-text);}
+  .btn.gr{border-color:var(--green-border);background:var(--green-soft);color:var(--green-text);}
+  .btn.sm{font-size:13px;padding:7px 11px;border-radius:10px;}
+  .btnrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
+  .btnrow .btn{flex:1 1 auto;}
 
   /* ============ Layout ============ */
-  main{padding-top:20px;}
-  .view{display:none;}
-  .view.active{display:block;animation:fade .18s ease;}
-  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
-  .card{background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-lg);padding:var(--sp-lg);
-    margin-bottom:16px;box-shadow:var(--surface-shadow);transition:background-color .2s ease,border-color .2s ease;}
-  .card.tight{padding:var(--sp-md);}
-  .eyebrow{font-size:12px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--ink-subtle);margin:0 0 4px;}
-  .card h2{font-size:18px;font-weight:600;letter-spacing:-0.3px;margin:0 0 2px;}
-  .card .sub{font-size:13px;color:var(--ink-subtle);margin:0 0 16px;}
-
-  /* ============ Inputs ============ */
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .field label{display:block;font-size:12.5px;color:var(--ink-muted);margin-bottom:6px;font-weight:500;}
-  .field label .u{color:var(--ink-tertiary);font-weight:400;}
-  .inp{position:relative;}
-  .inp input{
-    width:100%;background:var(--s2);border:1px solid var(--hair);color:var(--ink);
-    font-family:var(--mono);font-size:15px;padding:11px 12px;border-radius:var(--r-md);
-    outline:none;transition:border-color .12s,box-shadow .12s,background-color .2s;
+  .app{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:18px 16px calc(100px + env(safe-area-inset-bottom));}
+  @media(min-width:1024px){
+    .design{display:grid;grid-template-columns:430px minmax(0,1fr);gap:20px;align-items:start;}
+    .col-in{position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto;padding-right:4px;}
+    .single{max-width:860px;margin:0 auto;}
   }
-  .inp input:focus{border-color:var(--primary-focus);box-shadow:0 0 0 3px var(--focus-ring);}
-  .inp input.err{border-color:var(--danger);box-shadow:0 0 0 3px var(--err-ring);}
-  .row-actions{display:flex;gap:10px;margin-top:16px;}
-  .btn{font-family:var(--sans);font-size:14px;font-weight:500;border-radius:var(--r-md);
-    padding:10px 14px;border:1px solid transparent;cursor:pointer;transition:.12s;display:inline-flex;
-    align-items:center;justify-content:center;gap:7px;}
-  .btn:active{transform:scale(.98);}
-  .btn.primary{background:var(--primary);color:var(--on-primary);}
-  .btn.primary:hover{background:var(--primary-hover);}
-  .btn.ghost{background:var(--s2);color:var(--ink);border-color:var(--hair);}
-  .btn.ghost:hover{border-color:var(--hair-strong);}
-  .btn.wide{flex:1;}
+  .card{background:var(--card);border:1px solid var(--card-border);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);
+    transition:background-color .2s ease,border-color .2s ease;}
+  :root[data-theme="hc"] .card{border-width:2px;}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+  .card-t{font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:15.5px;color:var(--ink-2);display:flex;align-items:center;gap:9px;}
+  .card-t .e{font-size:19px;}
+  .sect-t{color:var(--accent-text);font-size:21px;letter-spacing:.14em;font-weight:700;text-transform:uppercase;margin:14px 0 4px;display:flex;align-items:center;gap:10px;}
+  .sub{font-size:15px;color:var(--ink-3);margin:0 0 12px;}
+  .fillnote{color:var(--orange);font-weight:700;font-size:15.5px;margin:4px 0 12px;}
+  .note{font-size:14px;color:var(--ink-3);margin:12px 0 0;line-height:1.45;}
+  .ve{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--ink-3);background:var(--card-2);border:1px solid var(--card-border);padding:3px 9px;border-radius:999px;}
 
-  /* ============ Feasibility banner ============ */
-  .verdict{border-radius:var(--r-lg);padding:16px 18px;margin-bottom:16px;border:1px solid;display:flex;gap:14px;align-items:flex-start;}
-  .verdict.ok{background:var(--success-bg);border-color:var(--success-border);}
-  .verdict.bad{background:var(--danger-bg);border-color:var(--danger-border);}
-  .verdict .vic{width:34px;height:34px;flex:0 0 34px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:18px;}
-  .verdict.ok .vic{background:var(--success-border);color:var(--success-text);}
+  /* crossing type cards */
+  .xopt{position:relative;display:flex;align-items:center;gap:14px;padding:13px 15px;border:1px solid var(--card-border-2);
+    background:var(--card-2);border-radius:15px;cursor:pointer;margin-top:10px;transition:.15s;}
+  .xopt:hover{border-color:var(--purple);}
+  .xopt input{position:absolute;opacity:0;pointer-events:none;}
+  .xopt .ic{font-size:27px;width:36px;text-align:center;flex:0 0 36px;line-height:1;}
+  .xopt .tx{display:flex;flex-direction:column;min-width:0;}
+  .xopt .t{font-weight:700;font-size:19px;color:var(--ink);line-height:1.2;}
+  .xopt .s{font-size:14.5px;color:var(--ink-3);line-height:1.25;}
+  .xopt .radio{margin-left:auto;width:26px;height:26px;border-radius:50%;border:2px solid var(--card-border-2);flex:0 0 26px;transition:.15s;}
+  .xopt.sel{background:var(--purple-soft);border-color:var(--purple);}
+  .xopt.sel .t{color:var(--purple-text);} .xopt.sel .s{color:var(--purple-sub);}
+  .xopt.sel .radio{background:var(--purple-dot);border-color:var(--purple-dot);box-shadow:0 0 12px var(--purple-dot);}
+  .xopt:focus-within{outline:2px solid var(--accent);outline-offset:2px;}
+
+  /* mode banner */
+  .banner{display:flex;gap:12px;align-items:center;padding:12px 15px;border-radius:13px;border:1px solid var(--purple);
+    background:var(--purple-soft);color:var(--purple-text);font-weight:600;font-size:16.5px;line-height:1.3;}
+  .banner .bi{font-size:22px;}
+
+  /* ============ Fields ============ */
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:350px){.fgrid{grid-template-columns:1fr;}}
+  .grp{grid-column:1/-1;font-weight:700;letter-spacing:.18em;font-size:13px;color:var(--ink-3);text-transform:uppercase;
+    padding-top:12px;margin-top:2px;border-top:1px dashed var(--card-border-2);}
+  .grp:first-child{border-top:0;padding-top:0;margin-top:0;}
+  .fld{min-width:0;}
+  .fld label{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-weight:600;font-size:16px;color:var(--ink-2);margin-bottom:6px;line-height:1.2;}
+  .star{color:var(--star);font-size:15px;}
+  .pill{font-size:12.5px;font-weight:700;padding:1px 8px;border-radius:6px;background:var(--green-soft);color:var(--green-text);letter-spacing:.02em;line-height:1.5;}
+  .ibox{position:relative;}
+  .ibox input,.fld select{width:100%;height:50px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:11px;
+    color:var(--ink);font:500 18px/1 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;padding:0 44px 0 14px;outline:none;
+    transition:border-color .15s,box-shadow .15s;-moz-appearance:textfield;}
+  .fld select{padding:0 12px;font-size:16px;-webkit-appearance:auto;appearance:auto;}
+  .ibox input::-webkit-outer-spin-button,.ibox input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .ibox input::placeholder{color:var(--ph);}
+  .ibox input:focus,.fld select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .ibox input.err{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-soft);}
+  .ibox .u{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:'Share Tech Mono',monospace;color:var(--ink-4);font-size:13.5px;pointer-events:none;}
+  .hint{font-size:13.5px;color:var(--ink-4);margin-top:5px;line-height:1.3;}
+
+  /* ============ Verdict ============ */
+  .verdict{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border-radius:18px;border:1px solid;margin-bottom:16px;}
+  .verdict.ok{background:var(--ok-soft);border-color:var(--ok-border);}
+  .verdict.warn{background:var(--warn-soft);border-color:var(--warn-border);}
+  .verdict.bad{background:var(--danger-soft);border-color:var(--danger-border);}
+  .verdict .vic{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:19px;}
+  .verdict.ok .vic{background:var(--ok-border);color:var(--ok-text);}
+  .verdict.warn .vic{background:var(--warn-border);color:var(--warn-text);}
   .verdict.bad .vic{background:var(--danger-border);color:var(--danger-text);}
-  .verdict .vt{font-size:16px;font-weight:600;letter-spacing:-0.2px;}
-  .verdict.ok .vt{color:var(--success-text);}
-  .verdict.bad .vt{color:var(--danger-text);}
-  .verdict .vd{font-size:13px;color:var(--ink-muted);margin-top:3px;line-height:1.45;}
+  .verdict .vt{font-size:19px;font-weight:700;letter-spacing:.02em;}
+  .verdict.ok .vt{color:var(--ok-text);} .verdict.warn .vt{color:var(--warn-text);} .verdict.bad .vt{color:var(--danger-text);}
+  .verdict .vd{font-size:15.5px;color:var(--ink-2);margin-top:2px;}
+  .verdict .vd b{color:var(--ink);}
   .verdict ul{margin:8px 0 0;padding-left:18px;}
-  .verdict li{font-size:12.5px;color:var(--ink-muted);margin-bottom:4px;}
+  .verdict li{font-size:15px;color:var(--ink-2);margin-bottom:5px;}
   .verdict li b{color:var(--ink);}
-  .ok-hl{color:var(--success-text);}
+  .verdict .vnotes li{color:var(--ink-3);}
 
-  /* ============ Diagram ============ */
-  .diagram-card{padding:16px 12px 12px;}
-  .diagram-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px 10px;flex-wrap:wrap;gap:8px;}
-  .diagram-head h2{font-size:16px;margin:0;font-weight:600;}
-  .ve{font-family:var(--mono);font-size:11px;color:var(--ink-subtle);background:var(--s3);border:1px solid var(--hair);padding:3px 8px;border-radius:var(--r-pill);}
-  .svgwrap{width:100%;overflow-x:auto;border-radius:var(--r-md);}
-  svg.profile{display:block;width:100%;height:auto;background:var(--s2);border-radius:var(--r-md);}
-  .legend{display:flex;flex-wrap:wrap;gap:12px 18px;padding:12px 6px 2px;}
-  .legend span{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-muted);}
-  .legend i{width:16px;height:0;border-top-width:2px;border-top-style:solid;display:inline-block;}
+  /* ============ Tiles / KPIs ============ */
+  .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  @media(min-width:680px){.kpis.k3{grid-template-columns:repeat(3,minmax(0,1fr));}}
+  .kpi{background:var(--card-2);border:1px solid var(--card-border);border-radius:14px;padding:11px 13px;min-width:0;}
+  .kpi .k{font-size:13.5px;color:var(--ink-3);font-weight:600;letter-spacing:.03em;line-height:1.25;}
+  .kpi .v{font-family:'Share Tech Mono',monospace;font-size:21px;color:var(--ink);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .kpi .v small{font-size:13px;color:var(--ink-3);margin-left:3px;}
+  .kpi.hi{border-color:var(--accent-border);background:var(--accent-soft);} .kpi.hi .v{color:var(--accent-text);}
+  .sbgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .sb{border:1px solid var(--accent-border);background:var(--accent-soft);border-radius:16px;padding:14px 14px 12px;text-align:center;}
+  .sb .k{font-weight:700;letter-spacing:.14em;font-size:13px;color:var(--ink-2);text-transform:uppercase;}
+  .sb .v{font-family:'Share Tech Mono',monospace;font-size:clamp(24px,7vw,34px);color:var(--accent-text);margin:4px 0 2px;text-shadow:0 0 14px var(--accent-soft);}
+  .sb .v small{font-size:15px;color:var(--ink-3);}
+  .sb .s{font-size:13.5px;color:var(--ink-3);line-height:1.25;}
+  .sb.low{border-color:var(--danger-border);background:var(--danger-soft);} .sb.low .v{color:var(--danger-text);}
 
-  /* ============ Result tables ============ */
-  table{width:100%;border-collapse:collapse;font-size:13.5px;}
-  thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-subtle);
-    font-weight:600;padding:0 8px 10px;border-bottom:1px solid var(--hair);}
-  thead th.num,tbody td.num{text-align:right;font-family:var(--mono);}
-  tbody td{padding:11px 8px;border-bottom:1px solid var(--hair);color:var(--ink-muted);vertical-align:middle;}
-  tbody tr:last-child td{border-bottom:none;}
-  tbody td.seg{color:var(--ink);font-weight:500;}
-  tbody td.num{color:var(--ink);}
-  tr.neg td{color:var(--danger)!important;}
-  tr.neg td.num{color:var(--danger)!important;}
-  tr.total td{border-top:1px solid var(--hair-strong);font-weight:600;}
-  tr.total td.seg{color:var(--ink);}
-  tr.total td.num{color:var(--primary-hover);font-size:15px;}
+  /* ============ Plot ============ */
+  .plotwrap{width:100%;border-radius:14px;overflow:hidden;border:1px solid var(--card-border);}
+  svg.plot{display:block;width:100%;height:auto;background:var(--p-bg);touch-action:pan-y;user-select:none;-webkit-user-select:none;}
+  .plot text{font-family:'Rajdhani',system-ui,sans-serif;}
+  .plot .tk{font-family:'Share Tech Mono',monospace;font-size:11px;fill:var(--p-text);}
+  .plot .g-grid{stroke:var(--p-grid);stroke-width:1;}
+  .plot .g-earth{fill:var(--p-earth);}
+  .plot .g-ground{fill:none;stroke:var(--p-earth-line);stroke-width:1.7;stroke-linejoin:round;}
+  .plot .g-water{fill:var(--p-water);}
+  .plot .g-wline{stroke:var(--p-water-line);stroke-width:1.4;}
+  .plot .g-wave{fill:none;stroke:var(--p-water-line);stroke-width:1.2;opacity:.75;}
+  .plot .g-bed{fill:none;stroke:var(--p-bed);stroke-width:2.6;stroke-linejoin:round;}
+  .plot .g-lining{fill:none;stroke:var(--p-rail);stroke-width:4.5;opacity:.55;stroke-linejoin:round;}
+  .plot .g-scour{stroke:var(--p-scour);stroke-width:1.3;stroke-dasharray:4 3;}
+  .plot .g-slab{font-size:10.5px;font-weight:700;fill:var(--p-scour);letter-spacing:.5px;}
+  .plot .g-cover{fill:none;stroke:var(--p-cover);stroke-width:1.6;stroke-dasharray:6 4;}
+  .plot .g-clab{font-size:10.5px;font-weight:700;fill:var(--p-cover);letter-spacing:.5px;}
+  .plot .g-glow{fill:none;stroke:var(--p-glow);stroke-width:9;stroke-linecap:round;stroke-linejoin:round;}
+  .plot .g-tan{fill:none;stroke:var(--p-tan);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;}
+  .plot .g-arc{fill:none;stroke:var(--p-arc);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;}
+  .plot .g-node{fill:var(--p-bg);stroke:var(--p-node);stroke-width:2;}
+  .plot .g-nlab{font-size:12.5px;font-weight:700;fill:var(--p-label);}
+  .plot .g-rod{fill:var(--p-bg);stroke:var(--p-label);stroke-width:1.2;}
+  .plot .g-rodlab{font-family:'Share Tech Mono',monospace;font-size:9.5px;fill:var(--p-text);}
+  .plot .g-act{fill:none;stroke:var(--p-actual);stroke-width:2.3;stroke-dasharray:5 3;stroke-linejoin:round;}
+  .plot .g-actpt{fill:var(--p-actual);}
+  .plot .g-road{fill:var(--p-road);}
+  .plot .g-roadline{stroke:var(--p-road-line);stroke-width:1.6;stroke-dasharray:6 5;}
+  .plot .g-ballast{fill:var(--p-ballast);stroke:var(--p-rail);stroke-width:1;}
+  .plot .g-rail{stroke:var(--p-rail);stroke-width:2.4;}
+  .plot .g-sleeper{fill:var(--p-rail);}
+  .plot .g-post{stroke:var(--p-dim);stroke-width:1.6;}
+  .plot .g-dim{stroke:var(--p-dim);stroke-width:1.2;}
+  .plot .g-arrow{fill:var(--p-dim);}
+  .plot .g-ext{stroke:var(--p-dim);stroke-width:1;stroke-dasharray:2 3;opacity:.7;}
+  .plot .g-dimv{font-family:'Share Tech Mono',monospace;font-size:12px;fill:var(--p-label);}
+  .plot .g-dimc{font-size:10.5px;font-weight:700;letter-spacing:1px;fill:var(--p-dim);}
+  .plot .g-olab{font-size:13px;font-weight:700;letter-spacing:3px;fill:var(--p-water-line);}
+  .plot .g-olab2{font-size:12px;font-weight:700;letter-spacing:2.5px;fill:var(--p-label);}
+  .plot .g-cdim{stroke:var(--p-cover);stroke-width:1.2;}
+  .plot .g-carrow{fill:var(--p-cover);}
+  .plot .g-cdimt{font-family:'Share Tech Mono',monospace;font-size:11px;fill:var(--p-cover);}
+  .plot .g-rig rect,.plot .g-rig circle{fill:var(--p-rig);}
+  .plot .g-rig line{stroke:var(--p-rig);stroke-width:4;stroke-linecap:round;}
+  .plot .g-rig line.fr{stroke-width:2;opacity:.8;}
+  .plot .g-pipe polyline{fill:none;stroke:var(--p-label);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;opacity:.7;}
+  .plot .g-pipe circle{fill:none;stroke:var(--p-text);stroke-width:1.4;}
+  .plot .g-pipe line{stroke:var(--p-text);stroke-width:1.2;}
+  .plot .g-cap{font-size:11px;font-weight:700;letter-spacing:1.5px;fill:var(--p-label);}
+  .plot .g-axis{font-size:10.5px;font-weight:700;letter-spacing:.5px;fill:var(--p-text);}
+  .plot .h-line{stroke:var(--p-label);stroke-width:1;stroke-dasharray:3 3;opacity:.6;}
+  .plot .h-dot{fill:var(--accent);stroke:var(--p-bg);stroke-width:2;}
+  .plot .h-box{fill:var(--p-bg);stroke:var(--accent-border);stroke-width:1;opacity:.96;}
+  .plot .h-t{font-family:'Share Tech Mono',monospace;font-size:12px;fill:var(--p-label);}
+  .plot .h-t1{fill:var(--accent-text);}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:12px 4px 0;}
+  .legend span{display:inline-flex;align-items:center;gap:7px;font-size:14px;color:var(--ink-2);font-weight:600;}
+  .lg{display:inline-block;width:20px;height:0;border-top:3px solid;}
+  .lg-tan{border-color:var(--p-tan);} .lg-arc{border-color:var(--p-arc);} .lg-gnd{border-color:var(--p-earth-line);border-top-width:2px;}
+  .lg-cov{border-top:2px dashed var(--p-cover);} .lg-act{border-top:2px dashed var(--p-actual);}
+  .lg-wat{height:11px;border:0;background:var(--p-water);border-radius:3px;}
+  .lg-rod{width:9px;height:9px;border:1.5px solid var(--p-label);border-radius:50%;}
+  .plot-tip{font-size:13px;color:var(--ink-4);margin-top:6px;}
 
-  /* KPI grid */
-  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .kpi{background:var(--s2);border:1px solid var(--hair);border-radius:var(--r-md);padding:13px 14px;}
-  .kpi .k{font-size:11.5px;color:var(--ink-subtle);margin-bottom:6px;}
-  .kpi .v{font-family:var(--mono);font-size:19px;font-weight:500;color:var(--ink);letter-spacing:-0.5px;}
-  .kpi .v small{font-size:12px;color:var(--ink-subtle);font-family:var(--sans);margin-left:3px;letter-spacing:0;}
+  /* ============ Tables ============ */
+  .tbl-wrap{overflow:auto;border:1px solid var(--card-border);border-radius:14px;-webkit-overflow-scrolling:touch;}
+  .tbl-wrap.tall{max-height:72vh;}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:14.5px;}
+  th{position:sticky;top:0;background:var(--card-2);color:var(--ink-3);font-weight:700;font-size:12.5px;letter-spacing:.07em;
+    text-transform:uppercase;text-align:right;padding:10px 10px;border-bottom:1px solid var(--card-border-2);white-space:nowrap;z-index:2;}
+  th small{display:block;font-size:11px;letter-spacing:.02em;text-transform:none;color:var(--ink-4);font-weight:600;}
+  td{padding:8px 10px;border-bottom:1px solid var(--card-border);text-align:right;font-family:'Share Tech Mono',monospace;color:var(--ink);white-space:nowrap;}
+  tr:last-child td{border-bottom:0;}
+  td.l,th.l{text-align:left;}
+  td.l{font-family:'Rajdhani',system-ui,sans-serif;font-weight:600;font-size:15px;}
+  td.muted{color:var(--ink-3);}
+  tr.tot td{border-top:1px solid var(--card-border-2);font-weight:700;}
+  tr.tot td.num{color:var(--accent-text);font-size:16px;}
+  tr.neg td{color:var(--danger-text);}
+  td.okc{color:var(--ok-text);} td.lowc{color:var(--danger-text);font-weight:700;}
+  .rodtbl th:first-child,.rodtbl td:first-child{position:sticky;left:0;z-index:1;background:var(--card);}
+  .rodtbl th:first-child{z-index:3;background:var(--card-2);}
+  .rodtbl tr.key td{background:var(--accent-soft);}
+  .rodtbl tr.key td:first-child{background:var(--card);box-shadow:inset 3px 0 0 var(--accent);}
+  .sd{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px;}
+  .sd.s0,.sd.s2,.sd.s4{background:var(--p-tan);} .sd.s1,.sd.s3{background:var(--p-arc);}
+  .nb{display:inline-block;min-width:20px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:12px;padding:0 5px;border-radius:6px;
+    border:1px solid var(--accent-border);color:var(--accent-text);margin-left:6px;}
+  td.rdc{padding:4px 6px;}
+  input.rd{width:92px;height:34px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--ink);
+    font:15px 'Share Tech Mono',monospace;padding:0 8px;text-align:right;outline:none;-moz-appearance:textfield;}
+  input.rd::-webkit-outer-spin-button,input.rd::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  input.rd:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);}
+  input.rd::placeholder{color:var(--ph);}
+  td.adz.good{color:var(--ok-text);} td.adz.bad{color:var(--danger-text);font-weight:700;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--card-border-2);color:var(--ink-2);background:var(--card-2);}
+  .prog{margin:14px 0 0;padding:0;list-style:none;counter-reset:p;}
+  .prog li{display:flex;align-items:center;gap:12px;padding:9px 12px;border:1px solid var(--card-border);border-radius:12px;margin-bottom:8px;background:var(--card-2);font-size:15.5px;color:var(--ink-2);line-height:1.35;}
+  .prog li b{color:var(--ink);}
+  .prog li .rn{flex:0 0 auto;font-family:'Share Tech Mono',monospace;font-size:12.5px;color:var(--accent-text);white-space:nowrap;
+    border:1px solid var(--accent-border);border-radius:8px;padding:3px 6px;min-width:34px;text-align:center;background:var(--accent-soft);}
+  .prog li .rn::before{content:"ROD ";font-size:10px;opacity:.75;}
 
-  /* ============ Checks tab ============ */
-  .kv{display:flex;justify-content:space-between;align-items:baseline;padding:12px 2px;border-bottom:1px solid var(--hair);gap:12px;}
-  .kv:last-child{border-bottom:none;}
-  .kv .lab{font-size:13.5px;color:var(--ink-muted);}
-  .kv .val{font-family:var(--mono);font-size:16px;color:var(--ink);white-space:nowrap;}
-  .bigres{background:var(--s2);border:1px solid var(--hair);border-radius:var(--r-md);padding:18px;text-align:center;margin-top:14px;}
-  .bigres .k{font-size:12px;color:var(--ink-subtle);}
-  .bigres .v{font-family:var(--mono);font-size:30px;color:var(--primary-hover);font-weight:500;letter-spacing:-1px;margin-top:4px;}
-  .citebox{font-size:11.5px;color:var(--ink-tertiary);background:var(--s2);border:1px solid var(--hair);
-    border-radius:var(--r-sm);padding:9px 11px;margin-top:12px;line-height:1.5;}
-  .citebox b{color:var(--ink-subtle);font-weight:600;}
-  .checkrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;
-    background:var(--s2);border:1px solid var(--hair);border-radius:var(--r-md);margin-top:8px;}
-  .checkrow .cl{font-size:13px;color:var(--ink-muted);}
-  .checkrow .cv{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;}
-  .checkrow .cv .dot{width:8px;height:8px;border-radius:50%;}
-  .checkrow.pass .cv{color:var(--success-text);}
-  .checkrow.pass .cv .dot{background:var(--success);}
-  .checkrow.fail .cv{color:var(--danger-text);}
-  .checkrow.fail .cv .dot{background:var(--danger);}
+  /* as-drilled tracking */
+  .trk{border:1px dashed var(--card-border-2);border-radius:14px;padding:12px;margin:0 0 12px;}
+  .sw{display:flex;align-items:center;gap:12px;font-weight:700;font-size:16.5px;cursor:pointer;color:var(--ink);}
+  .sw input{position:absolute;opacity:0;pointer-events:none;}
+  .swt{width:44px;height:25px;border-radius:999px;background:var(--card-border-2);position:relative;transition:.2s;flex:0 0 44px;}
+  .swt::after{content:"";position:absolute;left:3px;top:3px;width:19px;height:19px;border-radius:50%;background:var(--ink);transition:.2s;}
+  .sw input:checked + .swt{background:var(--accent);} .sw input:checked + .swt::after{left:22px;background:var(--accent-ink);}
+  .sw input:focus-visible + .swt{outline:2px solid var(--accent);outline-offset:2px;}
+  .trk-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px;align-items:end;}
+  .trk-opts .ibox input,.trk-opts select{height:44px;font-size:16px;}
+  .trk-sum{font-size:14.5px;color:var(--ink-3);margin-top:10px;}
+  .trk-sum b{color:var(--ink);}
 
-  /* ============ Info / reference ============ */
-  .ref h3{font-size:14px;margin:18px 0 8px;color:var(--ink);}
-  .ref p{font-size:13px;color:var(--ink-muted);margin:0 0 10px;}
-  .formula{font-family:var(--mono);font-size:12.5px;background:var(--s2);border:1px solid var(--hair);
-    border-radius:var(--r-sm);padding:10px 12px;color:var(--ink-muted);overflow-x:auto;white-space:nowrap;margin:0 0 8px;}
-  .formula b{color:var(--primary-hover);}
-  .note{font-size:12px;color:var(--ink-tertiary);}
-  a{color:var(--primary-hover);text-decoration:none;}
+  /* details */
+  details.exp{border-top:1px dashed var(--card-border-2);margin-top:14px;padding-top:12px;}
+  details.exp summary{cursor:pointer;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:14px;color:var(--accent-text);list-style:none;}
+  details.exp summary::-webkit-details-marker{display:none;}
+  details.exp summary::before{content:"▸ ";} details.exp[open] summary::before{content:"▾ ";}
+  .exprow{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0;align-items:end;}
+  .exprow .ibox input{height:44px;font-size:16px;}
 
-  /* ============ Bottom tab bar ============ */
-  nav.tabs{
-    position:fixed;bottom:0;left:0;right:0;z-index:50;
-    background:var(--scrim-strong);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-    border-top:1px solid var(--hair);display:flex;justify-content:center;
-    padding-bottom:env(safe-area-inset-bottom); transition:background-color .2s ease,border-color .2s ease;
+  /* checks & guide */
+  .bigres{background:var(--accent-soft);border:1px solid var(--accent-border);border-radius:16px;padding:16px;text-align:center;margin-top:12px;}
+  .bigres .k{font-size:14px;color:var(--ink-2);font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+  .bigres .v{font-family:'Share Tech Mono',monospace;font-size:32px;color:var(--accent-text);margin-top:2px;}
+  .kv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 2px;border-bottom:1px solid var(--card-border);}
+  .kv:last-child{border-bottom:0;}
+  .kv .lab{font-size:15.5px;color:var(--ink-2);} .kv .val{font-family:'Share Tech Mono',monospace;font-size:16px;white-space:nowrap;}
+  .checkrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;margin-top:8px;border:1px solid var(--card-border);background:var(--card-2);flex-wrap:wrap;}
+  .checkrow .cl{font-size:15px;color:var(--ink-2);} .checkrow .cl b{color:var(--ink);font-family:'Share Tech Mono',monospace;font-weight:400;}
+  .checkrow .cv{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14.5px;}
+  .checkrow .cv i{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .checkrow.pass .cv{color:var(--ok-text);} .checkrow.pass .cv i{background:var(--ok);}
+  .checkrow.fail .cv{color:var(--danger-text);} .checkrow.fail .cv i{background:var(--danger);}
+  .citebox{font-size:13.5px;color:var(--ink-3);background:var(--card-2);border:1px solid var(--card-border);border-radius:12px;padding:10px 12px;margin-top:12px;line-height:1.45;}
+  .citebox b{color:var(--ink-2);}
+  .formula{font-family:'Share Tech Mono',monospace;font-size:14px;background:var(--card-2);border:1px solid var(--card-border);border-radius:10px;
+    padding:10px 12px;color:var(--ink-2);overflow-x:auto;white-space:nowrap;margin:0 0 8px;}
+  .formula b{color:var(--accent-text);font-weight:400;}
+  .ref h3{font-size:17px;letter-spacing:.08em;text-transform:uppercase;margin:20px 0 8px;color:var(--ink);}
+  .ref p,.ref li{font-size:16px;color:var(--ink-2);}
+  .ref ol,.ref ul{padding-left:20px;margin:0 0 10px;}
+  .ref li{margin-bottom:6px;}
+
+  /* ============ Floating pill ============ */
+  .fpill{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:60;display:flex;align-items:center;gap:10px;
+    padding:11px 16px;border-radius:18px;border:1.5px solid var(--accent);background:var(--pill-bg);color:var(--ink);font-weight:700;font-size:16.5px;
+    box-shadow:var(--pill-glow);max-width:calc(100vw - 28px);cursor:pointer;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);}
+  .fpill .pt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .fpill .dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px;background:var(--ink-4);}
+  .fpill .dot.ok{background:var(--ok);box-shadow:0 0 8px var(--ok);} .fpill .dot.warn{background:var(--warn);box-shadow:0 0 8px var(--warn);} .fpill .dot.bad{background:var(--danger);box-shadow:0 0 8px var(--danger);}
+
+  /* ============ Drawer ============ */
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .2s;z-index:80;}
+  .scrim.open{opacity:1;pointer-events:auto;}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(86vw,360px);background:var(--card);border-left:1px solid var(--card-border-2);
+    transform:translateX(102%);transition:transform .25s ease;z-index:90;display:flex;flex-direction:column;overflow:auto;}
+  .drawer.open{transform:none;}
+  .dr-head{position:relative;padding:calc(26px + env(safe-area-inset-top)) 22px 20px;background:linear-gradient(160deg,var(--hero-a),var(--hero-b));border-bottom:1px solid var(--hero-border);}
+  .dr-x{position:absolute;right:16px;top:calc(16px + env(safe-area-inset-top));width:42px;height:42px;border-radius:12px;border:1px solid var(--card-border-2);
+    background:var(--nav-bg);color:var(--ink);display:grid;place-items:center;cursor:pointer;}
+  .dr-x svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;}
+  .dr-logo{width:62px;height:62px;border-radius:16px;overflow:hidden;box-shadow:var(--logo-glow);}
+  .dr-logo img{width:100%;height:100%;display:block;}
+  .dr-name{font-size:23px;font-weight:700;letter-spacing:.05em;margin-top:12px;color:var(--title-ink);}
+  .dr-sub{font-size:15px;color:var(--ink-3);}
+  .dr-item{display:flex;align-items:center;gap:16px;padding:14px 22px;font-size:18.5px;font-weight:600;color:var(--ink);background:none;border:0;width:100%;text-align:left;cursor:pointer;}
+  .dr-item:hover{background:var(--accent-soft);}
+  .dr-item .di{font-size:22px;width:28px;text-align:center;}
+  .dr-sep{border-top:1px solid var(--card-border-2);margin:6px 0;}
+  .dr-theme{padding:10px 22px 14px;}
+  .dr-lab{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700;margin-bottom:8px;}
+  .dr-foot{margin-top:auto;padding:16px 22px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--card-border-2);font-size:13px;color:var(--ink-4);letter-spacing:.03em;}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:calc(78px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:100;
+    background:var(--pill-bg);border:1px solid var(--accent-border);color:var(--ink);padding:10px 16px;border-radius:12px;font-weight:600;font-size:15.5px;
+    transition:.2s;box-shadow:var(--shadow);max-width:calc(100vw - 32px);text-align:center;}
+  .toast.on{opacity:1;transform:translate(-50%,0);}
+
+  @media(max-width:420px){.card{padding:16px;} .kpi .v{font-size:19px;}}
+  @media print{
+    body::before,.hamb,.mainnav,.hero-row,.fpill,.drawer,.scrim,.btnrow,.toast,.trk,.exprow .btn{display:none!important;}
+    .card{box-shadow:none;break-inside:avoid;}
+    .col-in{position:static!important;max-height:none!important;overflow:visible!important;}
+    .tbl-wrap,.tbl-wrap.tall{max-height:none;overflow:visible;}
   }
-  nav.tabs .inner{display:flex;width:100%;max-width:var(--maxw);}
-  nav.tabs button{
-    flex:1;background:none;border:none;color:var(--ink-tertiary);font-family:var(--sans);
-    padding:10px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:4px;
-    font-size:11px;font-weight:500;cursor:pointer;transition:color .12s;letter-spacing:0.1px;
-  }
-  nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;}
-  nav.tabs button.active{color:var(--primary-hover);}
-  @media(max-width:420px){.kpi .v{font-size:17px;} .card{padding:18px;}}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="hbar">
-    <span class="logo"><img src="icons/LOGO.svg" alt="HDD Profile Studio logo"></span>
-    <div class="brand"><div class="brand-text">
-      <span class="brand-title">HDD Profile Studio</span>
-      <small>Directional drilling geometry</small>
-    </div></div>
-    <span class="spacer"></span>
-    <button class="iconbtn" id="themeToggle" aria-label="Toggle light / dark theme" title="Toggle theme">
-      <svg id="themeIconMoon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
-      <svg id="themeIconSun" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>
+<header class="hero">
+  <div class="hero-in">
+    <button class="hamb" id="btnMenu" aria-label="Open menu" aria-controls="drawer" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
-    <span id="statusChip" class="chip"><span class="dot"></span><span id="statusText">—</span></span>
+    <div class="logo-glow"><img src="icons/icon-192.png" alt="HDD Profile Studio logo" width="64" height="64"></div>
+    <h1 class="title">HDD PROFILE STUDIO</h1>
+    <div class="tagline">HORIZONTAL DIRECTIONAL DRILLING</div>
+    <div class="hero-rule"></div>
+    <nav class="mainnav" id="mainNav" aria-label="Sections">
+      <button data-view="basic"><span class="e">📐</span><span>Basic</span></button>
+      <button data-view="advanced"><span class="e">🔩</span><span>Advanced</span></button>
+      <button data-view="checks"><span class="e">✅</span><span>Checks</span></button>
+      <button data-view="info"><span class="e">📖</span><span>Guide</span></button>
+    </nav>
+    <div class="hero-row">
+      <button class="btn gr sm" id="btnShareTop">🔗 Share</button>
+      <div class="tseg" role="group" aria-label="Theme">
+        <button data-theme-set="light">Light</button><button data-theme-set="dark">Dark</button><button data-theme-set="hc">High Contrast</button>
+      </div>
+    </div>
   </div>
 </header>
 
-<main class="wrap">
+<main class="app">
 
-  <!-- ================= PROFILE VIEW ================= -->
-  <section id="view-profile" class="view active">
+  <!-- ================= DESIGN (Basic + Advanced) ================= -->
+  <div id="designView" class="design">
+    <div class="col-in">
+      <section class="card" id="crossCard">
+        <div class="card-h">
+          <div class="card-t"><span class="e">⚙️</span>Select crossing type</div>
+          <div class="useg" role="group" aria-label="Angle unit">
+            <button data-unit="pct">% Percent</button><button data-unit="deg">° Degree</button>
+          </div>
+        </div>
+        <div id="crossList" role="radiogroup" aria-label="Crossing type"></div>
+      </section>
 
-    <div class="card">
-      <p class="eyebrow">Crossing parameters</p>
-      <h2>Inputs</h2>
-      <p class="sub">Metric units — matches your design spreadsheet. Values update live.</p>
-      <div class="grid" id="inputGrid">
-        <div class="field"><label>Entry angle <span class="u">(°)</span></label><div class="inp"><input id="entryAngle" type="number" inputmode="decimal" step="0.1" value="6"></div></div>
-        <div class="field"><label>Exit angle <span class="u">(°)</span></label><div class="inp"><input id="exitAngle" type="number" inputmode="decimal" step="0.1" value="6"></div></div>
-        <div class="field"><label>Entry depth to bore <span class="u">(m)</span></label><div class="inp"><input id="entryElev" type="number" inputmode="decimal" step="0.1" value="6"></div></div>
-        <div class="field"><label>Exit depth to bore <span class="u">(m)</span></label><div class="inp"><input id="exitElev" type="number" inputmode="decimal" step="0.1" value="6"></div></div>
-        <div class="field"><label>Entry ROC · R1 <span class="u">(m)</span></label><div class="inp"><input id="R1" type="number" inputmode="decimal" step="10" value="900"></div></div>
-        <div class="field"><label>Exit ROC · R2 <span class="u">(m)</span></label><div class="inp"><input id="R2" type="number" inputmode="decimal" step="10" value="900"></div></div>
-        <div class="field" style="grid-column:1 / -1"><label>Total plan distance <span class="u">(m, horizontal entry→exit)</span></label><div class="inp"><input id="tpd" type="number" inputmode="decimal" step="10" value="1500"></div></div>
+      <section class="card" id="inCard">
+        <div class="banner" id="modeBanner"></div>
+        <h2 class="sect-t">📋 Bore details</h2>
+        <p class="fillnote">★ Fill only starred fields. All others are optional.</p>
+        <div class="fgrid" id="fgrid"></div>
+        <div class="btnrow">
+          <button class="btn cy" id="btnExample">⚡ Load example</button>
+          <button class="btn" id="btnClear">✕ Clear</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-out">
+      <div id="verdict"></div>
+
+      <!-- ---------- BASIC results ---------- -->
+      <div id="basicOut">
+        <section class="card" id="setbackCard">
+          <div class="card-h"><div class="card-t"><span class="e">📏</span><span id="sbTitle">Setback from bank edge</span></div></div>
+          <div class="sbgrid" id="sbTiles"></div>
+          <div class="kpis k3" id="sbKpis"></div>
+          <p class="note" id="sbNote"></p>
+        </section>
+
+        <section class="card">
+          <div class="card-h"><div class="card-t"><span class="e">📈</span>Profile</div><span class="ve" id="veB">—</span></div>
+          <div class="plotwrap"><svg class="plot" id="svgB" role="img" aria-label="HDD crossing profile"></svg></div>
+          <div class="legend" id="legB"></div>
+          <div class="plot-tip">Tip: drag across the drawing to read chainage, elevation, cover and pitch.</div>
+        </section>
+
+        <section class="card">
+          <div class="card-h"><div class="card-t"><span class="e">🧮</span>Segment lengths</div></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th class="l">Segment</th><th class="l">Type</th><th>Length<small>m, along bore</small></th><th>Horizontal<small>m</small></th><th>Vertical<small>m</small></th></tr></thead>
+            <tbody id="segBody"></tbody>
+          </table></div>
+        </section>
+
+        <section class="card">
+          <div class="card-h"><div class="card-t"><span class="e">🎯</span>Key dimensions</div></div>
+          <div class="kpis k3" id="kpis"></div>
+        </section>
+
+        <section class="card" id="coverCard">
+          <div class="card-h"><div class="card-t"><span class="e">🛡️</span>Cover check</div></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th class="l">Point</th><th>Chainage<small>m</small></th><th>Ground<small>elev, m</small></th><th>Pipe<small>elev, m</small></th><th>Cover<small>m</small></th><th>Required<small>m</small></th><th class="l">Status</th></tr></thead>
+            <tbody id="covBody"></tbody>
+          </table></div>
+          <p class="note" id="covNote"></p>
+        </section>
+
+        <section class="card">
+          <div class="card-h"><div class="card-t"><span class="e">📍</span>Node coordinates</div></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th class="l">Point</th><th>Chainage<small>m from entry</small></th><th>Elevation<small>m</small></th><th>Depth<small>below entry, m</small></th><th>Pitch</th></tr></thead>
+            <tbody id="nodeBody"></tbody>
+          </table></div>
+          <p class="note" id="nodeNote"></p>
+
+          <details class="exp" id="staDet">
+            <summary>Station–elevation table &amp; AutoCAD export</summary>
+            <div class="exprow">
+              <div class="fld"><label for="dxIn">Station interval</label><div class="ibox"><input id="dxIn" type="number" inputmode="decimal" step="any" placeholder="10"><span class="u">m</span></div></div>
+              <div class="fld"><label for="ysIn">AutoCAD Y-scale</label><div class="ibox"><input id="ysIn" type="number" inputmode="decimal" step="any" placeholder="1"><span class="u">×</span></div></div>
+              <button class="btn cy" id="btnPlineB">📋 Copy PLINE</button>
+              <button class="btn" id="btnCsvB">⬇ CSV</button>
+            </div>
+            <div class="tbl-wrap tall"><table>
+              <thead><tr><th class="l">Pt</th><th>Station<small>m</small></th><th>Elevation<small>m</small></th><th>Depth<small>below entry</small></th><th>Ground<small>m</small></th><th>Cover<small>m</small></th><th>Pitch</th></tr></thead>
+              <tbody id="staBody"></tbody>
+            </table></div>
+            <p class="note">To draw in AutoCAD: type <b>PLINE</b>, press Enter, then paste the copied points (X = chainage, Y = elevation × Y-scale).</p>
+          </details>
+        </section>
       </div>
-      <div class="row-actions">
-        <button class="btn ghost wide" id="btnExample">Load example</button>
-        <button class="btn ghost wide" id="btnReset">Clear</button>
+
+      <!-- ---------- ADVANCED results ---------- -->
+      <div id="advOut">
+        <section class="card">
+          <div class="card-h"><div class="card-t"><span class="e">🔩</span>Rod plan summary</div></div>
+          <div class="kpis k3" id="advKpis"></div>
+          <div class="chips" id="advChips"></div>
+          <ol class="prog" id="advProg"></ol>
+        </section>
+
+        <section class="card">
+          <div class="card-h"><div class="card-t"><span class="e">📈</span>Rod-by-rod profile</div><span class="ve" id="veA">—</span></div>
+          <div class="plotwrap"><svg class="plot" id="svgA" role="img" aria-label="Rod-by-rod HDD profile"></svg></div>
+          <div class="legend" id="legA"></div>
+          <div class="plot-tip">Tip: drag across the drawing to read any rod's position.</div>
+        </section>
+
+        <section class="card">
+          <div class="card-h">
+            <div class="card-t"><span class="e">🧾</span>Rod-by-rod table</div>
+          </div>
+          <div class="trk">
+            <label class="sw"><input type="checkbox" id="trkOn"><span class="swt"></span>Log as-drilled readings</label>
+            <div class="trk-opts" id="trkOpts">
+              <div class="fld"><label for="trkFmt">Reading format</label>
+                <select id="trkFmt"><option value="pct">% pitch</option><option value="deg">° pitch (from horizontal)</option><option value="inc">° inclination (from vertical)</option></select></div>
+              <div class="fld"><label for="trkTie">Tie-in reading <span class="pill">optional</span></label><div class="ibox"><input id="trkTie" type="number" step="any" placeholder="= entry angle"></div></div>
+              <div class="fld"><label for="trkTol">Alarm if off-plan by</label><div class="ibox"><input id="trkTol" type="number" inputmode="decimal" step="any" placeholder="0.5"><span class="u">m</span></div></div>
+              <button class="btn" id="trkClear">Clear readings</button>
+            </div>
+            <div class="trk-sum" id="trkSum"></div>
+          </div>
+          <div class="tbl-wrap tall"><table class="rodtbl" id="rodTbl"><thead></thead><tbody></tbody></table></div>
+          <div class="exprow">
+            <div class="fld"><label for="ysIn2">AutoCAD Y-scale</label><div class="ibox"><input id="ysIn2" type="number" inputmode="decimal" step="any" placeholder="1"><span class="u">×</span></div></div>
+            <button class="btn cy" id="btnPlineA">📋 PLINE · plan</button>
+            <button class="btn cy" id="btnPlineAct">📋 PLINE · as-drilled</button>
+            <button class="btn" id="btnCsvA">⬇ CSV</button>
+          </div>
+          <p class="note">Depth = vertical depth below the entry ground level. Cover = ground (or river/canal bed) level above the pipe minus pipe level, i.e. what a walk-over locator reads directly above the head.</p>
+        </section>
       </div>
     </div>
+  </div>
 
-    <!-- feasibility -->
-    <div id="verdict"></div>
-
-    <!-- diagram -->
-    <div class="card diagram-card">
-      <div class="diagram-head">
-        <h2>Profile</h2>
-        <span class="ve" id="veLabel">—</span>
+  <!-- ================= CHECKS ================= -->
+  <div id="checksView" class="single">
+    <section class="card">
+      <h2 class="sect-t" style="margin-top:0">✅ Design checks</h2>
+      <p class="sub">Rules of thumb, checked live against the design on the Basic / Advanced pages.</p>
+      <div class="fgrid">
+        <div class="fld"><label for="c_od">Pipe outside diameter <span class="star">★</span></label><div class="ibox"><input id="c_od" type="number" inputmode="decimal" step="any" placeholder="e.g. 406"><span class="u">mm</span></div></div>
+        <div class="fld"><label for="c_fos">Factor of safety <span class="pill">optional</span></label><div class="ibox"><input id="c_fos" type="number" inputmode="decimal" step="any" placeholder="1.0"><span class="u">FOS</span></div></div>
       </div>
-      <div class="svgwrap"><svg class="profile" id="svg" viewBox="0 0 800 340" preserveAspectRatio="xMidYMid meet"></svg></div>
-      <div class="legend">
-        <span><i style="border-color:var(--primary)"></i>Bore path</span>
-        <span><i style="border-color:var(--ink-subtle);border-top-style:dashed"></i>Ground surface</span>
-        <span><i style="border-color:var(--success)"></i>Straight (tangent)</span>
-        <span><i style="border-color:var(--warn)"></i>Curve (arc)</span>
-      </div>
-    </div>
-
-    <!-- segments -->
-    <div class="card">
-      <p class="eyebrow">Results</p>
-      <h2>Segment lengths</h2>
-      <p class="sub">Along-pipe length of each profile section. A negative value = infeasible geometry.</p>
-      <table><thead><tr><th>Segment</th><th>Type</th><th class="num">Length (m)</th></tr></thead>
-        <tbody id="segBody"></tbody>
-      </table>
-    </div>
-
-    <!-- key dimensions -->
-    <div class="card">
-      <p class="eyebrow">Key dimensions</p>
-      <h2>Summary</h2>
-      <div class="kpis" id="kpis" style="margin-top:14px"></div>
-    </div>
-
-    <!-- nodes -->
-    <div class="card">
-      <p class="eyebrow">Setting out</p>
-      <h2>Node coordinates</h2>
-      <p class="sub">Chainage measured from entry point A. Depth is below the entry surface.</p>
-      <table><thead><tr><th>Point</th><th class="num">Chainage X (m)</th><th class="num">Depth (m)</th></tr></thead>
-        <tbody id="nodeBody"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ================= CHECKS VIEW ================= -->
-  <section id="view-checks" class="view">
-
-    <div class="card">
-      <p class="eyebrow">Design input</p>
-      <h2>Pipe diameter</h2>
-      <p class="sub">Used by both checks below.</p>
-      <div class="field"><label>Pipe outside diameter <span class="u">(mm)</span></label><div class="inp"><input id="pipeOD" type="number" inputmode="decimal" step="1" value="660"></div></div>
-    </div>
-
-    <div class="card">
-      <p class="eyebrow">Check 1</p>
-      <h2>Minimum bend radius</h2>
-      <p class="sub">Rule-of-thumb minimum design radius of curvature for steel pipe pulled by HDD.</p>
-      <div class="field"><label>Factor of safety <span class="u">(FOS)</span></label><div class="inp"><input id="radiusFOS" type="number" inputmode="decimal" step="0.05" value="1.0"></div></div>
-      <div class="bigres"><div class="k">Suggested minimum radius</div><div class="v" id="rMinOut">—</div></div>
-      <p class="formula" style="margin-top:14px">R<b>min</b> = 1000 &times; OD<sub>(m)</sub> &times; FOS</p>
-      <div id="radiusChecks"></div>
-      <div class="citebox"><b>Ref:</b> steel HDD design radius ≥ ~1,000–1,200 × OD is a long-standing industry rule of thumb (Faghih, Bayat &amp; Collins, HDD product-pipe bend-radius design literature).</div>
-    </div>
-
-    <div class="card">
-      <p class="eyebrow">Check 2</p>
-      <h2>Minimum cover depth</h2>
-      <p class="sub">Minimum recommended soil cover above the pipe, based on diameter.</p>
-      <div class="kv"><span class="lab">5 × OD (arching basis)</span><span class="val" id="coverByDia">—</span></div>
-      <div class="kv"><span class="lab">Absolute floor (PRCI guidance)</span><span class="val">4.60 m</span></div>
-      <div class="bigres"><div class="k">Recommended minimum cover</div><div class="v" id="coverMinOut">—</div></div>
-      <div id="coverChecks"></div>
+    </section>
+    <section class="card">
+      <div class="card-h"><div class="card-t"><span class="e">↪️</span>Check 1 · Minimum bend radius</div></div>
+      <p class="sub">Minimum design radius of curvature for steel pipe pulled back by HDD.</p>
+      <div id="ck1"></div>
+      <p class="formula" style="margin-top:12px">R<b>min</b> = 1000 × OD<sub>(m)</sub> × FOS</p>
+      <div class="citebox"><b>Ref:</b> steel HDD design radius ≥ ~1,000–1,200 × OD is a long-standing industry rule of thumb (Faghih, Bayat &amp; Collins, HDD product-pipe bend-radius design literature). FOS 1.2 ≈ the 1,200 × OD rule.</div>
+    </section>
+    <section class="card">
+      <div class="card-h"><div class="card-t"><span class="e">🛡️</span>Check 2 · Minimum cover depth</div></div>
+      <p class="sub">Recommended soil cover above the pipe, based on diameter.</p>
+      <div id="ck2"></div>
       <div class="citebox"><b>Ref:</b> cover ≥ 5 × OD for soil arching to develop (PPI Handbook of PE Pipe, Ch.12; ASTM F1962 commentary). PRCI HDD Good Practices Guidelines sets an absolute floor of 15 ft (4.6 m).</div>
-    </div>
-  </section>
+    </section>
+    <section class="card">
+      <div class="card-h"><div class="card-t"><span class="e">🧭</span>Check 3 · Steering per rod</div></div>
+      <p class="sub">Pitch change the driller must make on every rod through the curves.</p>
+      <div id="ck3"></div>
+      <p class="formula" style="margin-top:12px">Δθ per rod = L<b>rod</b> / R × 180/π</p>
+      <div class="citebox"><b>Ref:</b> “degrees per joint” = joint length ÷ radius, as in <i>Automated HDD profile calc.xlsx</i>. Check the result against your drill-rod manufacturer's minimum rod bend radius.</div>
+    </section>
+  </div>
 
-  <!-- ================= INFO VIEW ================= -->
-  <section id="view-info" class="view">
+  <!-- ================= GUIDE ================= -->
+  <div id="infoView" class="single">
+    <section class="card ref">
+      <h2 class="sect-t" style="margin-top:0">📖 How to use</h2>
+      <ol>
+        <li><b>Pick the crossing type.</b> For river, canal, road and railway crossings you give the obstacle and the minimum cover, and the app works out the <b>minimum entry and exit setback</b>. For Open Ground you enter the depths and plan distance yourself.</li>
+        <li><b>Fill the ★ fields.</b> Everything else is optional and has a sensible default.</li>
+        <li><b>Basic</b> gives the 5-segment profile, setbacks, cover check, node and station tables. <b>Advanced</b> adds the rod length and turns the same design into a rod-by-rod drilling plan, and can log as-drilled readings against it. <b>Checks</b> compares the design with bend-radius and cover rules of thumb.</li>
+        <li>Use <b>% / °</b> to switch how angles are entered and shown. Drillers' pitch in % = 100 × tan(angle).</li>
+      </ol>
+    </section>
 
-    <div class="card ref">
-      <p class="eyebrow">Reference</p>
-      <h2>How the geometry works</h2>
-      <p>The crossing is modelled as five sections between six points <b>A → B → C → D → E → F</b>: an entry straight (tangent), an entry curve, a horizontal bottom run, an exit curve, and an exit straight.</p>
-      <h3>Section lengths</h3>
-      <p class="formula">AB = H1 / sin θ1 − R1 · tan(θ1/2)</p>
-      <p class="formula">BC<b>arc</b> = R1 · θ1&nbsp;&nbsp;&nbsp;&nbsp;DE<b>arc</b> = R2 · θ2</p>
-      <p class="formula">EF = H2 / sin θ2 − R2 · tan(θ2/2)</p>
-      <p class="formula">CD = TPD − AB·cosθ1 − R1·sinθ1 − R2·sinθ2 − EF·cosθ2</p>
+    <section class="card ref">
+      <h2 class="sect-t" style="margin-top:0">📐 Profile geometry</h2>
+      <p>The bore is five sections between six points <b>A → B → C → D → E → F</b>: entry tangent, entry curve, horizontal bottom run, exit curve and exit tangent.</p>
+      <p class="formula">AB = H1 / sin θ1 − R1 · tan(θ1/2)&nbsp;&nbsp;&nbsp;EF = H2 / sin θ2 − R2 · tan(θ2/2)</p>
+      <p class="formula">BC = R1 · θ1&nbsp;&nbsp;&nbsp;DE = R2 · θ2&nbsp;&nbsp;&nbsp;(θ in radians)</p>
+      <p class="formula">CD = TPD − AB·cos θ1 − R1·sin θ1 − R2·sin θ2 − EF·cos θ2</p>
       <p class="formula">HDD length = AB + BC + CD + DE + EF</p>
-      <h3>Feasibility</h3>
-      <p>The profile is <b>feasible</b> only when every section length is ≥ 0.</p>
-      <p class="formula">Entry tangent needs&nbsp; H1 ≥ R1·(1 − cos θ1)</p>
-      <p class="formula">Exit tangent needs&nbsp;&nbsp; H2 ≥ R2·(1 − cos θ2)</p>
-      <p class="formula">Bottom run needs&nbsp;&nbsp;&nbsp;&nbsp; TPD ≥ curve + tangent horizontals</p>
-      <p class="note">Symbols: θ = angle · H = depth to bore · R = radius of curvature (ROC) · TPD = total plan distance. Verified against the source spreadsheet (θ=6°, H=6&nbsp;m, R=900&nbsp;m, TPD=1500&nbsp;m → HDD length 1500.46&nbsp;m).</p>
-    </div>
+      <p>The profile is feasible only if every section is ≥ 0, i.e. H1 ≥ R1(1 − cos θ1), H2 ≥ R2(1 − cos θ2), and the plan distance is long enough for both curves.</p>
+    </section>
 
-    <div class="card ref">
-      <p class="eyebrow">About</p>
-      <h2>HDD Profile Studio</h2>
-      <p>Offline geometry calculator for horizontal directional drilling crossing profiles. All computation runs on your device — no internet needed after first load.</p>
-    </div>
-  </section>
+    <section class="card ref">
+      <h2 class="sect-t" style="margin-top:0">📏 Setback from cover</h2>
+      <p>Level datum 0 is the bank top (river / canal) or the natural ground (road / railway). Under the obstacle the pipe must stay on or below the <b>min-cover line</b>:</p>
+      <p class="formula">River / canal bed:&nbsp; z<b>pipe</b> ≤ −(bed depth) − scour − C<b>bed</b></p>
+      <p class="formula">Bank slopes:&nbsp; z<b>pipe</b> ≤ ground(x) − C<b>bank</b>&nbsp;&nbsp;&nbsp;Road / rail:&nbsp; z<b>pipe</b> ≤ −C</p>
+      <p>The bottom run is set at the lowest point of that line (plus any extra depth). If the curves can't level out that shallow — H &lt; R(1 − cos θ) — the bottom is lowered to the geometric limit and a note is shown.</p>
+      <p>The <b>minimum setback</b> is the smallest horizontal distance from the entry (or exit) point to the obstacle edge for which the entry (exit) half of the bore clears the whole min-cover line. It is solved separately for each side by bisection. The pipe only gets deeper as the setback grows, so the answer is unique. Plan distance = entry setback + obstacle width + exit setback. If the two curves would overlap, both setbacks are lengthened equally until they just meet.</p>
+      <p>Fixing a setback (for a site-constrained rig position) re-runs the cover check along the full width and flags any point where the pipe is too shallow.</p>
+    </section>
 
+    <section class="card ref">
+      <h2 class="sect-t" style="margin-top:0">🔩 Rod-by-rod plan</h2>
+      <p>Rod <i>k</i> ends at measured depth MD<sub>k</sub> = L<sub>1</sub> + (k − 1)·L (L<sub>1</sub> = first rod / tooling length); the last rod is shortened to finish exactly at the exit. Each rod end is placed exactly on the design path:</p>
+      <p class="formula">Tangent:&nbsp; x = s·cos θ,&nbsp; z = z<b>0</b> − s·sin θ</p>
+      <p class="formula">Curve:&nbsp; φ = θ1 − s/R1,&nbsp; x = x<b>B</b> + R1(sin θ1 − sin φ),&nbsp; depth = d<b>B</b> + R1(cos φ − cos θ1)</p>
+      <p class="formula">Steering per rod = L / R × 180/π&nbsp;&nbsp;&nbsp;(“degrees per joint”)</p>
+      <p>Pitch is signed like a walk-over locator: <b>negative = nose down</b>. Inclination from vertical = 90° + pitch; % pitch = 100 · tan(pitch).</p>
+      <h3>As-drilled readings</h3>
+      <p>Logged readings use the <b>average-angle method</b> (as in <i>HDD_Pilot_Master_Sheet</i>). The tie-in is the entry angle unless you enter one:</p>
+      <p class="formula">Δaway<b>k</b> = L<b>k</b> · cos((θ<b>k−1</b> + θ<b>k</b>)/2)&nbsp;&nbsp;&nbsp;Δz<b>k</b> = L<b>k</b> · sin((θ<b>k−1</b> + θ<b>k</b>)/2)</p>
+      <p>Δ elev = as-drilled elevation − planned elevation at the same rod (+ = shallower than plan).</p>
+    </section>
+
+    <section class="card ref">
+      <h2 class="sect-t" style="margin-top:0">✔️ Verification</h2>
+      <ul>
+        <li>θ = 6°, H = 6 m, R = 900 m, TPD = 1500 m → AB 10.2336, BC 94.2478, CD 1291.4936, HDD length <b>1500.4564 m</b> (crossing profile geometry sheet).</li>
+        <li><i>Automated HDD profile calc</i> example (units cancel, so ft = m): entry 10°, exit 8°, R 3600, entry elev 47.1, bottom −30, exit elev 44.6, 1900 horizontal → PC1 127.08, PT1 752.22, PC2 1117.46, PT2 1618.48, pipe length <b>1909.54</b>. Degrees per 31.5 joint = 0.501°.</li>
+      </ul>
+      <p class="note">Planning aid only — the final design must be checked and approved by a qualified engineer. Everything is calculated in your browser; nothing is uploaded.</p>
+    </section>
+  </div>
 </main>
 
-<nav class="tabs">
-  <div class="inner">
-    <button data-view="profile" class="active">
-      <svg viewBox="0 0 24 24"><path d="M2 7c3.5 0 3.5 10 8 10s4.5-10 12-10"/><circle cx="2" cy="7" r="1.4" fill="currentColor" stroke="none"/><circle cx="22" cy="7" r="1.4" fill="currentColor" stroke="none"/></svg>
-      Profile
-    </button>
-    <button data-view="checks">
-      <svg viewBox="0 0 24 24"><path d="M9 12.5l2 2 4-4.5"/><circle cx="12" cy="12" r="9.5"/></svg>
-      Checks
-    </button>
-    <button data-view="info">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.6" r="0.9" fill="currentColor" stroke="none"/></svg>
-      Info
-    </button>
+<button class="fpill" id="fpill" aria-label="Jump between inputs and results"></button>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="Menu">
+  <div class="dr-head">
+    <button class="dr-x" id="drClose" aria-label="Close menu"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="dr-logo"><img src="icons/icon-192.png" alt="" width="62" height="62"></div>
+    <div class="dr-name">HDD Profile Studio</div>
+    <div class="dr-sub">Crossing profile, setback &amp; rod-by-rod designer</div>
   </div>
-</nav>
+  <div>
+    <button class="dr-item" data-go="basic"><span class="di">📐</span>Basic profile</button>
+    <button class="dr-item" data-go="advanced"><span class="di">🔩</span>Advanced · rod-by-rod</button>
+    <button class="dr-item" data-go="checks"><span class="di">✅</span>Design checks</button>
+    <button class="dr-item" data-go="info"><span class="di">📖</span>Guide &amp; formulas</button>
+    <div class="dr-sep"></div>
+    <button class="dr-item" id="drShareApp"><span class="di">🔗</span>Share app link</button>
+    <button class="dr-item" id="drShareDesign"><span class="di">📤</span>Share this design</button>
+    <button class="dr-item" id="drPrint"><span class="di">🖨️</span>Print / save as PDF</button>
+    <div class="dr-sep"></div>
+    <div class="dr-theme"><div class="dr-lab">Theme</div>
+      <div class="tseg" role="group" aria-label="Theme"><button data-theme-set="light">Light</button><button data-theme-set="dark">Dark</button><button data-theme-set="hc">High Contrast</button></div>
+    </div>
+  </div>
+  <div class="dr-foot">HDD Profile Studio · v3.0<br>Planning aid — verify the final design with a qualified engineer.</div>
+</aside>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-/* ============================ Theme ============================ */
-const THEME_KEY = 'hdd-profile-theme-v1';
-function applyTheme(t){
-  document.documentElement.setAttribute('data-theme', t);
-  document.querySelector('meta[name="theme-color"]').setAttribute('content', t==='light' ? '#f4f5f7' : '#010102');
-  document.getElementById('themeIconMoon').style.display = t==='light' ? 'block' : 'none';
-  document.getElementById('themeIconSun').style.display  = t==='light' ? 'none'  : 'block';
-  try{ localStorage.setItem(THEME_KEY, t); }catch(e){}
+(function(){
+'use strict';
+/* ============================ Helpers ============================ */
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.prototype.slice.call((r||document).querySelectorAll(s));
+const DEG=Math.PI/180;
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fmt(v,dp){
+  if(dp==null) dp=2;
+  if(v==null||!isFinite(v)) return '—';
+  if(Math.abs(v)<0.5*Math.pow(10,-dp)) v=0;
+  return v.toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp});
 }
-function initTheme(){
-  let t;
-  try{ t = localStorage.getItem(THEME_KEY); }catch(e){}
-  if(!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
-  applyTheme(t);
+const toPct=d=>100*Math.tan(d*DEG), fromPct=p=>Math.atan(p/100)/DEG;
+const trimNum=v=>String(+(+v).toFixed(4));
+const fAng=(deg,dp)=>ST.unit==='pct'?fmt(toPct(deg),dp==null?2:dp)+'%':fmt(deg,dp==null?2:dp)+'°';
+const fBoth=deg=>`${fmt(toPct(deg),2)}% (${fmt(deg,2)}°)`;
+function niceStep(raw){ if(!(raw>0)) return 1; const p=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/p; return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p; }
+
+/* ============================ Configuration ============================ */
+const TYPES={
+  river:{icon:'🌊',name:'River Crossing',sub:'Bank to bank · cover below scoured bed',obs:'channel',word:'River',banner:'setbacks calculated from the minimum cover'},
+  road:{icon:'🛣️',name:'Road / Highway',sub:'Right-of-way · cover below road level',obs:'flat',word:'Road',banner:'setbacks calculated from the minimum cover'},
+  rail:{icon:'🚆',name:'Railway Crossing',sub:'Track corridor · cover below formation',obs:'flat',word:'Railway',banner:'setbacks calculated from the minimum cover'},
+  canal:{icon:'💧',name:'Canal / Drain / Nala',sub:'Trapezoidal channel · cover below bed',obs:'channel',word:'Canal',banner:'setbacks calculated from the minimum cover'},
+  open:{icon:'🌾',name:'Open Ground',sub:'Manual depths & plan distance',obs:null,word:'Ground',banner:'manual depths & plan distance'},
+};
+const FIELDS={
+  rodL:{l:'Rod length',u:'m',req:'adv',ph:'e.g. 9.5',h:'Typical: 3 / 4.5 / 6 / 9.5 / 9.6 / 12 m'},
+  rod1:{l:'First rod / tooling',u:'m',ph:'= rod length',h:'Bit + sonde housing, if different'},
+  ang1:{l:'Entry angle',u:'ang',req:1,ph:{deg:'e.g. 12',pct:'e.g. 21'},h:'Below horizontal at the entry point'},
+  ang2:{l:'Exit angle',u:'ang',req:1,ph:{deg:'e.g. 8',pct:'e.g. 14'},h:'Rising, at the exit point'},
+  R1:{l:'Entry radius (ROC)',u:'m',req:1,ph:'e.g. 600',h:'Entry curve radius of curvature'},
+  R2:{l:'Exit radius (ROC)',u:'m',ph:'= entry ROC',h:'Exit curve radius of curvature'},
+  H1:{l:'Entry depth to bottom',u:'m',req:1,ph:'e.g. 6',h:'Entry ground to the horizontal bottom run'},
+  H2:{l:'Exit depth to bottom',u:'m',ph:'= entry depth',h:'Exit ground to the horizontal bottom run'},
+  tpd:{l:'Total plan distance',u:'m',req:1,ph:'e.g. 1500',h:'Horizontal, entry → exit'},
+  obsW:{l:{river:'River width',canal:'Canal top width',road:'Road / ROW width',rail:'Railway corridor width'},u:'m',req:1,
+        ph:{river:'e.g. 300',canal:'e.g. 25',road:'e.g. 60',rail:'e.g. 40'},
+        h:{river:'Bank edge to bank edge',canal:'Bank edge to bank edge',road:'Edge to edge, incl. drains / ROW',rail:'Boundary to boundary'}},
+  bedD:{l:{river:'River bed depth',canal:'Canal bed depth'},u:'m',req:1,ph:{river:'e.g. 6',canal:'e.g. 3'},h:'Deepest bed level below bank top'},
+  slope:{l:'Bank side slope',u:'H:1V',ph:{river:'2',canal:'1.5'},h:'Horizontal per 1 vertical · 0 = vertical'},
+  scour:{l:'Scour depth',u:'m',ph:'0',h:'Design scour below the bed'},
+  waterD:{l:'Water level',u:'m',ph:'auto',pill:'for drawing',h:'Below bank top'},
+  embH:{l:{road:'Road height',rail:'Embankment height'},u:'m',ph:{road:'0.5',rail:'1.5'},pill:'for drawing',h:'Above natural ground'},
+  minC:{l:{river:'Min cover below river bed',canal:'Min cover below canal bed',road:'Min cover below road',rail:'Min cover below railway'},u:'m',req:1,ph:'e.g. 5',
+        h:{river:'Below the scoured bed',canal:'Below the bed level',road:'Below natural ground, full width',rail:'Below natural ground, full width'}},
+  bankC:{l:'Min cover under banks',u:'m',ph:'= bed cover',h:'Below the bank slopes & edges'},
+  extraD:{l:'Extra depth',u:'m',ph:'0',h:'Design deeper than the minimum'},
+  zE:{l:'Entry ground level',u:'m',ph:'0',pill:{river:'vs bank top',canal:'vs bank top',road:'vs road ground',rail:'vs track ground'},h:'+ above / − below'},
+  zX:{l:'Exit ground level',u:'m',ph:'0',pill:{river:'vs bank top',canal:'vs bank top',road:'vs road ground',rail:'vs track ground'},h:'+ above / − below'},
+  S1o:{l:'Entry setback',u:'m',ph:'auto = min',h:'Fix only if the rig position is set'},
+  S2o:{l:'Exit setback',u:'m',ph:'auto = min',h:'Fix only if the exit is set'},
+};
+const SIGNED=new Set(['zE','zX']);
+const COMMON=new Set(['ang1','ang2','R1','R2','rodL','rod1']);
+const BORE=['Bore profile',['ang1','ang2','R1','R2']], ENDS=['Entry & exit points',['zE','zX','S1o','S2o']];
+const GROUPS={
+  river:[['River geometry',['obsW','bedD','slope','scour','waterD']],['Cover requirement',['minC','bankC','extraD']],BORE,ENDS],
+  canal:[['Canal geometry',['obsW','bedD','slope','scour','waterD']],['Cover requirement',['minC','bankC','extraD']],BORE,ENDS],
+  road:[['Road',['obsW','embH']],['Cover requirement',['minC','extraD']],BORE,ENDS],
+  rail:[['Railway',['obsW','embH']],['Cover requirement',['minC','extraD']],BORE,ENDS],
+  open:[BORE,['Depth & length',['H1','H2','tpd']]],
+};
+/* example angles are in degrees */
+const EX={
+  river:{c:{ang1:'12',ang2:'8',R1:'500',R2:'500',rodL:'9.5'},p:{obsW:'300',bedD:'6',slope:'2',scour:'2',minC:'5'}},
+  road:{c:{ang1:'10',ang2:'10',R1:'250',R2:'250',rodL:'6'},p:{obsW:'60',embH:'0.5',minC:'5'}},
+  rail:{c:{ang1:'10',ang2:'10',R1:'300',R2:'300',rodL:'6'},p:{obsW:'40',embH:'1.5',minC:'5'}},
+  canal:{c:{ang1:'10',ang2:'10',R1:'300',R2:'300',rodL:'4.5'},p:{obsW:'25',bedD:'3',slope:'1.5',minC:'3'}},
+  open:{c:{ang1:'6',ang2:'6',R1:'900',R2:'900',rodL:'9.5'},p:{H1:'6',H2:'6',tpd:'1500'}},
+};
+const SECN=['Tangent ↓','Curve ↓','Bottom','Curve ↑','Tangent ↑'];
+const SECL=['Entry tangent','Entry curve','Bottom run','Exit curve','Exit tangent'];
+
+/* ============================ State & persistence ============================ */
+const KEY='hdd-studio-v3', THEME_KEY='hdd-profile-theme-v1';
+const ST={view:'basic',type:'river',unit:'deg',
+  common:{ang1:'',ang2:'',R1:'',R2:'',rodL:'',rod1:''},
+  per:{river:{},road:{},rail:{},canal:{},open:{}},
+  chk:{od:'',fos:''},dx:'',ys:'',
+  adv:{track:false,fmt:'pct',tie:'',tol:'',readings:{}}};
+function save(){
+  try{ localStorage.setItem(KEY,JSON.stringify({view:ST.view,type:ST.type,unit:ST.unit,common:ST.common,per:ST.per,chk:ST.chk,dx:ST.dx,ys:ST.ys,adv:ST.adv})); }catch(e){}
 }
-document.getElementById('themeToggle').addEventListener('click', ()=>{
-  const cur = document.documentElement.getAttribute('data-theme');
-  applyTheme(cur==='light' ? 'dark' : 'light');
-  render(); renderChecks();
-});
+/* only number-like strings survive from storage or a shared link */
+const NUMLIKE=/^\s*-?(\d+\.?\d*|\.\d+)?(e[-+]?\d+)?\s*$/i;
+function cleanMap(o,keys){ const r={}; if(o&&typeof o==='object') keys.forEach(k=>{ const v=o[k]; if(v!=null&&String(v).length<30&&NUMLIKE.test(String(v))) r[k]=String(v); }); return r; }
+const PER_KEYS=['obsW','bedD','slope','scour','waterD','embH','minC','bankC','extraD','zE','zX','S1o','S2o','H1','H2','tpd'];
+const COMMON_KEYS=['ang1','ang2','R1','R2','rodL','rod1'];
+function load(){
+  let s=null;
+  try{ s=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
+  if(s&&typeof s==='object'){
+    if(['basic','advanced','checks','info'].indexOf(s.view)>=0) ST.view=s.view;
+    if(TYPES[s.type]) ST.type=s.type;
+    if(s.unit==='pct'||s.unit==='deg') ST.unit=s.unit;
+    Object.assign(ST.common,cleanMap(s.common,COMMON_KEYS));
+    Object.keys(TYPES).forEach(t=>{ ST.per[t]=cleanMap(s.per&&s.per[t],PER_KEYS); });
+    Object.assign(ST.chk,cleanMap(s.chk,['od','fos']));
+    const ex=cleanMap(s,['dx','ys']); ST.dx=ex.dx||''; ST.ys=ex.ys||'';
+    if(s.adv&&typeof s.adv==='object'){
+      ST.adv.track=!!s.adv.track;
+      if(['pct','deg','inc'].indexOf(s.adv.fmt)>=0) ST.adv.fmt=s.adv.fmt;
+      const t=cleanMap(s.adv,['tie','tol']); ST.adv.tie=t.tie||''; ST.adv.tol=t.tol||'';
+      const rd={}; if(s.adv.readings&&typeof s.adv.readings==='object') Object.keys(s.adv.readings).forEach(k=>{ const v=String(s.adv.readings[k]); if(/^\d+$/.test(k)&&v.length<20&&NUMLIKE.test(v)) rd[k]=v; });
+      ST.adv.readings=rd;
+    }
+    return true;
+  }
+  /* migrate v1/v2 inputs (Open Ground, degrees) */
+  try{
+    const o=JSON.parse(localStorage.getItem('hdd-profile-inputs-v1')||'null');
+    if(o&&isFinite(o.entryAngle)){
+      ST.type='open';
+      Object.assign(ST.common,{ang1:String(o.entryAngle),ang2:String(o.exitAngle),R1:String(o.R1),R2:String(o.R2),rodL:'9.5'});
+      ST.per.open={H1:String(o.entryElev),H2:String(o.exitElev),tpd:String(o.tpd)};
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+function raw(id){ const src=COMMON.has(id)?ST.common:(ST.per[ST.type]||{}); return src[id]==null?'':String(src[id]); }
+function setRaw(id,v){ if(COMMON.has(id)) ST.common[id]=v; else (ST.per[ST.type]=ST.per[ST.type]||{})[id]=v; }
+function num(id){ const s=raw(id).trim(); if(s==='') return NaN; const v=Number(s); return isFinite(v)?v:NaN; }
+function angDeg(id){ const v=num(id); if(!isFinite(v)) return NaN; const a=Math.abs(v); return ST.unit==='pct'?fromPct(a):a; }
+function pick(o){ if(o&&typeof o==='object'){ if(o[ST.type]!=null) return o[ST.type]; if(o[ST.unit]!=null) return o[ST.unit]; return ''; } return o||''; }
+function fieldLabel(id){ return pick(FIELDS[id].l); }
+function loadExample(T){
+  const e=EX[T], c=Object.assign({},e.c);
+  if(ST.unit==='pct'){ c.ang1=trimNum(toPct(+c.ang1)); c.ang2=trimNum(toPct(+c.ang2)); }
+  Object.assign(ST.common,{ang1:'',ang2:'',R1:'',R2:'',rod1:''},c);
+  ST.per[T]=Object.assign({},e.p);
+}
 
 /* ============================ Geometry engine ============================ */
-const DEG = Math.PI/180;
-function num(id){ const el=document.getElementById(id); if(!el) return NaN; const v = parseFloat(el.value); return isFinite(v)? v : NaN; }
-function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
-
-function compute(p){
-  const t1 = p.entryAngle*DEG, t2 = p.exitAngle*DEG;
-  const H1 = p.entryElev, H2 = p.exitElev, R1 = p.R1, R2 = p.R2, TPD = p.tpd;
-
-  const AB = p.entryAngle>0 ? H1/Math.sin(t1) - R1*Math.tan(t1/2) : NaN;
-  const EF = p.exitAngle>0 ? H2/Math.sin(t2) - R2*Math.tan(t2/2) : NaN;
-  const BC = R1*t1;
-  const DE = R2*t2;
-
-  const ABh = AB*Math.cos(t1);
-  const c1h = R1*Math.sin(t1);
-  const c2h = R2*Math.sin(t2);
-  const EFh = EF*Math.cos(t2);
-  const CD  = TPD - ABh - c1h - c2h - EFh;
-
-  const total = AB + BC + CD + DE + EF;
-
-  const A = {x:0, d:0};
-  const B = {x:ABh, d:AB*Math.sin(t1)};
-  const C = {x:B.x + c1h, d:B.d + R1*(1-Math.cos(t1))};
-  const D = {x:C.x + CD,  d:C.d};
-  const E = {x:D.x + c2h, d:D.d - R2*(1-Math.cos(t2))};
-  const F = {x:E.x + EFh, d:E.d - EF*Math.sin(t2)};
-
-  const minH1 = R1*(1-Math.cos(t1));
-  const minH2 = R2*(1-Math.cos(t2));
-  const minTPD = ABh + c1h + c2h + EFh;
-
-  return {t1,t2,H1,H2,R1,R2,TPD, AB,BC,CD,DE,EF, total,
-          nodes:{A,B,C,D,E,F}, minH1,minH2,minTPD,
-          horizCheck: ABh+c1h+CD+c2h+EFh};
-}
-
-function fmt(v,dp=2){ if(!isFinite(v)) return '—'; return v.toLocaleString(undefined,{minimumFractionDigits:dp,maximumFractionDigits:dp}); }
-
-/* ============================ Validation & feasibility ============================ */
-function validate(p){
-  const errs = [];
-  const set = (id,bad)=>document.getElementById(id).classList.toggle('err',bad);
-  const chk = (id,cond,msg)=>{ set(id,!cond); if(!cond) errs.push(msg); };
-  chk('entryAngle', p.entryAngle>0 && p.entryAngle<90, 'Entry angle must be between 0 and 90°.');
-  chk('exitAngle',  p.exitAngle>0  && p.exitAngle<90,  'Exit angle must be between 0 and 90°.');
-  chk('entryElev',  p.entryElev>0, 'Entry depth must be positive.');
-  chk('exitElev',   p.exitElev>0,  'Exit depth must be positive.');
-  chk('R1', p.R1>0, 'Entry ROC must be positive.');
-  chk('R2', p.R2>0, 'Exit ROC must be positive.');
-  chk('tpd', p.tpd>0, 'Total plan distance must be positive.');
-  return errs;
-}
-
-/* ============================ Render — Profile tab ============================ */
-const SEGS = [
-  ['AB','Entry tangent','Straight','AB'],
-  ['BC','Entry curve','Arc','BC'],
-  ['CD','Bottom run','Straight','CD'],
-  ['DE','Exit curve','Arc','DE'],
-  ['EF','Exit tangent','Straight','EF'],
-];
-
-function setStatus(state,text){
-  const chip=document.getElementById('statusChip');
-  chip.className='chip'+(state==='ok'?' ok':state==='bad'?' bad':'');
-  document.getElementById('statusText').textContent=text;
-}
-
-function render(){
-  const p = {
-    entryAngle:num('entryAngle'), exitAngle:num('exitAngle'),
-    entryElev:num('entryElev'), exitElev:num('exitElev'),
-    R1:num('R1'), R2:num('R2'), tpd:num('tpd')
+/* One side of the bore, measured from its surface point: tangent (length T) then an arc of radius R that levels out at depth H. */
+function half(theta,R,H){
+  const st=Math.sin(theta), ct=Math.cos(theta);
+  let T=H/st-R*Math.tan(theta/2); if(Math.abs(T)<1e-9) T=0;
+  const Th=T*ct, Tv=T*st, Ch=R*st, arc=R*theta;
+  const h={theta,R,H,T,Th,Tv,Ch,Cv:R*(1-ct),arc,xEnd:Th+Ch};
+  h.depthAt=x=>{
+    if(x<=0) return 0;
+    if(x<=Th) return x*Math.tan(theta);
+    if(x<Th+Ch){ const phi=Math.asin(clamp(st-(x-Th)/R,-1,1)); return Tv+R*(Math.cos(phi)-ct); }
+    return H;
   };
-  save(p);
-  const errs = validate(p);
-  const vEl = document.getElementById('verdict');
-
-  if(errs.length){
-    setStatus('bad','Check inputs');
-    vEl.className='verdict bad';
-    vEl.innerHTML = `<div class="vic">!</div><div><div class="vt">Invalid input</div>
-      <div class="vd">Fix the highlighted fields:</div><ul>${errs.map(e=>`<li>${e}</li>`).join('')}</ul></div>`;
-    document.getElementById('segBody').innerHTML='';
-    document.getElementById('nodeBody').innerHTML='';
-    document.getElementById('kpis').innerHTML='';
-    document.getElementById('svg').innerHTML='';
-    document.getElementById('veLabel').textContent='—';
-    return;
-  }
-
-  const r = compute(p);
-  const segVals = {AB:r.AB,BC:r.BC,CD:r.CD,DE:r.DE,EF:r.EF};
-  const negs = SEGS.filter(s=>segVals[s[3]] < 0);
-  const feasible = negs.length===0;
-
-  if(feasible){
-    setStatus('ok','Feasible');
-    vEl.className='verdict ok';
-    vEl.innerHTML = `<div class="vic">✓</div><div>
-      <div class="vt">Profile is feasible</div>
-      <div class="vd">All five sections have positive length. Total HDD pipe length ≈ <b class="ok-hl">${fmt(r.total)} m</b>.</div></div>`;
-  } else {
-    setStatus('bad','Not feasible');
-    const tips=[];
-    if(r.AB<0) tips.push(`<b>Entry tangent (AB) is negative.</b> Entry depth must be ≥ R1·(1−cosθ1) = <b>${fmt(r.minH1)} m</b> — increase entry depth, or reduce entry ROC / entry angle.`);
-    if(r.EF<0) tips.push(`<b>Exit tangent (EF) is negative.</b> Exit depth must be ≥ R2·(1−cosθ2) = <b>${fmt(r.minH2)} m</b> — increase exit depth, or reduce exit ROC / exit angle.`);
-    if(r.CD<0) tips.push(`<b>Bottom run (CD) is negative.</b> Total plan distance is too short — it must be ≥ <b>${fmt(r.minTPD)} m</b> for these curves, or reduce the radii / angles / depths.`);
-    vEl.className='verdict bad';
-    vEl.innerHTML = `<div class="vic">✕</div><div>
-      <div class="vt">Profile is not feasible</div>
-      <div class="vd">One or more sections compute to a negative length at these inputs:</div>
-      <ul>${tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>`;
-  }
-
-  document.getElementById('segBody').innerHTML = SEGS.map(s=>{
-    const v=segVals[s[3]]; const neg=v<0;
-    return `<tr class="${neg?'neg':''}"><td class="seg">${s[0]} · ${s[1]}</td>
-      <td>${s[2]}</td><td class="num">${fmt(v)}</td></tr>`;
-  }).join('') + `<tr class="total"><td class="seg">AF · HDD length</td><td></td><td class="num">${fmt(r.total)}</td></tr>`;
-
-  const kpis = [
-    ['Total HDD length', r.total, 'm'],
-    ['Horizontal (check = TPD)', r.horizCheck, 'm'],
-    ['Max bore depth', Math.max(r.H1,r.H2), 'm'],
-    ['Entry / exit surface Δ', (r.H1 - r.H2), 'm'],
-  ];
-  document.getElementById('kpis').innerHTML = kpis.map(k=>
-    `<div class="kpi"><div class="k">${k[0]}</div><div class="v">${fmt(k[1])}<small>${k[2]}</small></div></div>`).join('');
-
-  const N=r.nodes; const order=[['A',N.A],['B',N.B],['C',N.C],['D',N.D],['E',N.E],['F',N.F]];
-  document.getElementById('nodeBody').innerHTML = order.map(([lab,n])=>
-    `<tr><td class="seg">${lab}</td><td class="num">${fmt(n.x)}</td><td class="num">${fmt(n.d)}</td></tr>`).join('');
-
-  drawProfile(r, feasible);
+  h.angAt=x=>{ if(x<=Th) return theta; if(x<Th+Ch) return Math.asin(clamp(st-(x-Th)/R,-1,1)); return 0; };
+  h.atMD=m=>{
+    if(m<=T) return {x:m*ct,d:m*st,a:theta};
+    const u=m-T;
+    if(u<arc){ const phi=theta-u/R; return {x:Th+R*(st-Math.sin(phi)),d:Tv+R*(Math.cos(phi)-ct),a:phi}; }
+    return {x:Th+Ch+(u-arc),d:H,a:0};
+  };
+  return h;
+}
+/* Full 5-segment bore A→F. Depth d is below the entry ground; x is chainage from the entry point. */
+function buildPath(t1,t2,R1,R2,H1,H2,TPD){
+  const e=half(t1,R1,H1), x=half(t2,R2,H2);
+  let CD=TPD-e.xEnd-x.xEnd; if(Math.abs(CD)<1e-9) CD=0;
+  const total=e.T+e.arc+CD+x.arc+x.T, dF=H1-H2;
+  const b={mdB:e.T,mdC:e.T+e.arc,mdD:e.T+e.arc+CD,mdE:e.T+e.arc+CD+x.arc,mdF:total};
+  const P={e,x,CD,total,TPD,H1,H2,dF,t1,t2,R1,R2,bounds:b};
+  P.atMD=m=>{
+    m=clamp(m,0,total);
+    if(m<=b.mdC){ const r=e.atMD(m); return {x:r.x,d:r.d,pitch:-r.a,sec:m<=e.T?0:1}; }
+    if(m<=b.mdD) return {x:e.xEnd+(m-b.mdC),d:H1,pitch:0,sec:2};
+    const u=total-m, r=x.atMD(u);
+    return {x:TPD-r.x,d:dF+r.d,pitch:r.a,sec:u<=x.T?4:3};
+  };
+  P.depthAt=X=>{ if(X<=e.xEnd) return e.depthAt(X); if(X>=TPD-x.xEnd) return dF+x.depthAt(TPD-X); return H1; };
+  P.pitchAt=X=>{ if(X<=e.xEnd) return -e.angAt(X); if(X>=TPD-x.xEnd) return x.angAt(TPD-X); return 0; };
+  P.nodes={A:{x:0,d:0,p:-t1},B:{x:e.Th,d:e.Tv,p:-t1},C:{x:e.xEnd,d:H1,p:0},D:{x:e.xEnd+CD,d:H1,p:0},E:{x:TPD-x.Th,d:dF+x.Tv,p:t2},F:{x:TPD,d:dF,p:t2}};
+  return P;
 }
 
-/* ============================ SVG profile drawing ============================ */
-function arcPts(from, R, aFrom, aTo, kind){
-  const pts=[]; const steps=28;
-  for(let i=0;i<=steps;i++){
-    const a = aFrom + (aTo-aFrom)*i/steps;
-    if(kind==='entry'){
-      pts.push({x: from.x + R*(Math.sin(aFrom)-Math.sin(a)), d: from.d + R*(Math.cos(a)-Math.cos(aFrom))});
-    } else {
-      pts.push({x: from.x + R*Math.sin(a), d: from.d - R*(1-Math.cos(a))});
+/* ============================ Obstacles & setback ============================ */
+function mkSamples(W,bps){
+  const s=[], n=200, eps=Math.max(1e-6,W*1e-7);
+  for(let i=0;i<=n;i++) s.push(W*i/n);
+  bps.forEach(b=>{ s.push(b); if(b-eps>=0) s.push(b-eps); if(b+eps<=W) s.push(b+eps); });
+  s.sort((a,b)=>a-b);
+  return s.filter((v,i)=>i===0||v!==s[i-1]);
+}
+/* Local coordinate q runs 0 → W across the obstacle. Elevations are relative to bank top / natural ground = 0. */
+function buildObstacle(T,g){
+  const W=g.obsW;
+  if(TYPES[T].obs==='channel'){
+    const Hb=g.bedD;
+    const n=isFinite(g.slope)?Math.max(0,g.slope):(T==='river'?2:1.5);
+    let a=n*Hb, vshape=false;
+    if(2*a>W){ a=W/2; vshape=true; }
+    const scour=isFinite(g.scour)?Math.max(0,g.scour):0;
+    const Cb=g.minC, Ck=isFinite(g.bankC)?Math.max(0,g.bankC):Cb;
+    const wD=isFinite(g.waterD)?clamp(g.waterD,0,Hb):(T==='river'?0.3:0.25)*Hb;
+    const ground=q=>(q<=0||q>=W)?0:(q<a?-Hb*q/a:(q>W-a?-Hb*(W-q)/a:-Hb));
+    const isBed=q=>q>0&&q<W&&q>=a-1e-12&&q<=W-a+1e-12;
+    const req=q=>(q<0||q>W)?Infinity:(isBed(q)?(-Hb-scour-Cb):(ground(q)-Ck));
+    const samples=mkSamples(W,[0,a,W-a,W]);
+    let reqMin=Infinity; samples.forEach(q=>{ reqMin=Math.min(reqMin,req(q)); });
+    return {kind:'channel',T,word:TYPES[T].word,W,Hb,n,a,vshape,scour,Cb,Ck,wD,lining:T==='canal',ground,isBed,req,
+      reqM:q=>req(W-q),samples,samplesM:samples.map(q=>W-q),reqMin,outline:[[0,0],[a,-Hb],[W-a,-Hb],[W,0]],
+      keys:a>0?[['Left bank edge',0],['Left bank toe',a],['Centre',W/2],['Right bank toe',W-a],['Right bank edge',W]]:[['Left bank edge',0],['Centre',W/2],['Right bank edge',W]]};
+  }
+  const C=g.minC, emb=isFinite(g.embH)?Math.max(0,g.embH):(T==='road'?0.5:1.5);
+  const req=q=>(q<0||q>W)?Infinity:-C;
+  const samples=mkSamples(W,[0,W]);
+  return {kind:'flat',T,word:TYPES[T].word,W,C,emb,ground:()=>0,isBed:q=>q>=0&&q<=W,req,reqM:q=>req(W-q),samples,
+    samplesM:samples.map(q=>W-q),reqMin:-C,outline:[[0,0],[W,0]],keys:[['Near edge',0],['Centre',W/2],['Far edge',W]]};
+}
+/* Smallest setback S ≥ 0 so that the half-bore (surface level zS) stays on/below req(q) for every q. Monotone in S → bisection. */
+function solveSetback(h,zS,req,samples){
+  const viol=S=>{ let m=-Infinity; for(let i=0;i<samples.length;i++){ const q=samples[i], r=req(q); if(r===Infinity) continue; const v=(zS-h.depthAt(S+q))-r; if(v>m) m=v; } return m; };
+  /* tight: near the bottom of a curve 1e-7 m of depth is already ~1 cm of setback */
+  const tol=1e-11;
+  if(viol(0)<=tol) return 0;
+  let lo=0, hi=Math.max(h.xEnd,1e-3), guard=0;
+  while(viol(hi)>tol&&guard++<50) hi*=2;
+  for(let i=0;i<64;i++){ const mid=(lo+hi)/2; if(viol(mid)<=tol) hi=mid; else lo=mid; }
+  return hi;
+}
+
+/* ============================ Solve ============================ */
+function solve(){
+  const T=ST.type, adv=ST.view==='advanced';
+  const M={T,adv,errs:[],fail:[],warns:[],notes:[],bad:new Set(),P:null,obs:null,coverFail:null};
+  const need=(id,cond,msg)=>{ if(!cond){ M.bad.add(id); M.errs.push(msg); } };
+  const has=id=>isFinite(num(id));
+  const a1=angDeg('ang1'), a2=angDeg('ang2'), R1=num('R1'), R2=has('R2')?num('R2'):R1;
+  need('ang1',a1>0&&a1<75,'Entry angle is required (more than 0, less than 75° / 373%).');
+  need('ang2',a2>0&&a2<75,'Exit angle is required (more than 0, less than 75° / 373%).');
+  need('R1',R1>0,'Entry radius of curvature (ROC) is required.');
+  if(has('R2')) need('R2',R2>0,'Exit ROC must be greater than 0.');
+  let rodL=NaN, rod1=NaN;
+  if(adv){
+    rodL=num('rodL'); rod1=has('rod1')?num('rod1'):rodL;
+    need('rodL',rodL>0,'Rod length is required for the rod-by-rod plan.');
+    if(has('rod1')) need('rod1',rod1>0,'First rod length must be greater than 0.');
+  }
+  const t1=a1*DEG, t2=a2*DEG;
+
+  if(T==='open'){
+    const H1=num('H1'), H2=has('H2')?num('H2'):H1, TPD=num('tpd');
+    need('H1',H1>0,'Entry depth to the bottom run is required.');
+    if(has('H2')) need('H2',H2>0,'Exit depth must be greater than 0.');
+    need('tpd',TPD>0,'Total plan distance is required.');
+    if(M.errs.length) return M;
+    const P=buildPath(t1,t2,R1,R2,H1,H2,TPD);
+    Object.assign(M,{P,ZE:0,ZX:H2-H1,zBot:-H1,TPD});
+    M.groundAt=X=>X<=0?0:X>=TPD?M.ZX:M.ZX*X/TPD;
+    if(P.e.T<0) M.fail.push(`<b>Entry tangent is negative.</b> Entry depth must be at least R1·(1−cos θ1) = <b>${fmt(R1*(1-Math.cos(t1)))} m</b>. Go deeper, or reduce the entry ROC / angle.`);
+    if(P.x.T<0) M.fail.push(`<b>Exit tangent is negative.</b> Exit depth must be at least R2·(1−cos θ2) = <b>${fmt(R2*(1-Math.cos(t2)))} m</b>. Go deeper, or reduce the exit ROC / angle.`);
+    if(P.CD<0) M.fail.push(`<b>Bottom run is negative.</b> Plan distance must be at least <b>${fmt(P.e.xEnd+P.x.xEnd)} m</b> for these curves. Lengthen it, or reduce the radii / angles / depths.`);
+  } else {
+    const g={};
+    ['obsW','bedD','slope','scour','waterD','embH','minC','bankC','extraD','zE','zX','S1o','S2o'].forEach(k=>g[k]=num(k));
+    const ty=TYPES[T];
+    need('obsW',g.obsW>0,`${fieldLabel('obsW')} is required.`);
+    if(ty.obs==='channel') need('bedD',g.bedD>0,`${fieldLabel('bedD')} below bank top is required.`);
+    need('minC',g.minC>=0,'Minimum cover is required.');
+    ['slope','scour','waterD','embH','bankC','extraD','S1o','S2o'].forEach(k=>{ if(isFinite(g[k])) need(k,g[k]>=0,`${fieldLabel(k)} can't be negative.`); });
+    if(M.errs.length) return M;
+
+    const O=buildObstacle(T,g);
+    if(O.vshape) M.warns.push('The bank slope is too flat for this width and depth, so the channel is treated as V-shaped (no flat bed).');
+    const ZE=isFinite(g.zE)?g.zE:0, ZX=isFinite(g.zX)?g.zX:0;
+    const extra=g.extraD>0?g.extraD:0;
+    const zCov=O.reqMin-extra;
+    const zGeo=Math.min(ZE-R1*(1-Math.cos(t1)),ZX-R2*(1-Math.cos(t2)));
+    let zBot=zCov;
+    if(zGeo<zCov-1e-9){
+      zBot=zGeo;
+      M.warns.push(`<b>Bottom depth set by curve geometry, not cover.</b> With these angles and radii the bore can't level out above elevation <b>${fmt(zGeo)} m</b>, deeper than the ${fmt(zCov)} m the cover needs. Use a smaller ROC or a flatter angle for a shallower crossing.`);
+    }
+    const H1=ZE-zBot, H2=ZX-zBot;
+    const e=half(t1,R1,H1), x=half(t2,R2,H2);
+    const S1min=solveSetback(e,ZE,O.req,O.samples), S2min=solveSetback(x,ZX,O.reqM,O.samplesM);
+    const fix1=isFinite(g.S1o), fix2=isFinite(g.S2o);
+    let S1=fix1?g.S1o:S1min, S2=fix2?g.S2o:S2min, ext1=0, ext2=0;
+    const CD0=S1+O.W+S2-e.xEnd-x.xEnd;
+    if(CD0<-1e-9){
+      const d=-CD0;
+      if(!fix1&&!fix2){ ext1=ext2=d/2; M.notes.push(`Both setbacks lengthened by ${fmt(d/2)} m so the entry and exit curves meet (no flat bottom run).`); }
+      else if(!fix1){ ext1=d; M.notes.push(`Entry setback lengthened by ${fmt(d)} m so the curves meet.`); }
+      else if(!fix2){ ext2=d; M.notes.push(`Exit setback lengthened by ${fmt(d)} m so the curves meet.`); }
+      else M.fail.push(`<b>Fixed setbacks are too short.</b> The two curves need at least <b>${fmt(e.xEnd+x.xEnd-O.W)} m</b> of combined setback (now ${fmt(S1+S2)} m).`);
+      S1+=ext1; S2+=ext2;
+    }
+    const TPD=S1+O.W+S2;
+    const P=buildPath(t1,t2,R1,R2,H1,H2,TPD);
+    Object.assign(M,{P,obs:O,ZE,ZX,zBot,zCov,TPD,S1,S2,S1min,S2min,fix1,fix2,ext1,ext2,H1,H2});
+    M.groundAt=X=>{
+      if(X<=0) return ZE;
+      if(X<S1) return ZE*(1-X/S1);
+      if(X<=S1+O.W) return O.ground(X-S1);
+      if(X<TPD) return ZX*(X-S1-O.W)/S2;
+      return ZX;
+    };
+    if(!M.fail.length){
+      /* cover along the obstacle for the full bore */
+      let worst=Infinity, worstX=0, minU=Infinity, minUX=0, minK=Infinity, minKX=0;
+      O.samples.forEach(q=>{
+        const X=S1+q, z=ZE-P.depthAt(X), mg=O.req(q)-z, cov=O.ground(q)-z;
+        if(mg<worst){ worst=mg; worstX=X; }
+        if(O.isBed(q)){ if(cov<minU){ minU=cov; minUX=X; } } else if(cov<minK){ minK=cov; minKX=X; }
+      });
+      M.cov={worst,worstX,minU,minUX,minK,minKX};
+      if(worst<-1e-6) M.coverFail=`The pipe is <b>${fmt(-worst)} m too shallow</b> at chainage <b>${fmt(worstX,1)} m</b>. Lengthen the fixed setback(s), or clear them to use the minimum.`;
+      if(fix1&&S1<S1min-1e-6) M.notes.push(`Entry setback is fixed at ${fmt(S1)} m, below the ${fmt(S1min)} m minimum.`);
+      if(fix2&&S2<S2min-1e-6) M.notes.push(`Exit setback is fixed at ${fmt(S2)} m, below the ${fmt(S2min)} m minimum.`);
     }
   }
-  return pts;
+  if(M.P&&!M.fail.length&&adv) M.rods=buildRods(M,rodL,rod1);
+  return M;
 }
 
-function drawProfile(r, feasible){
-  const svg=document.getElementById('svg');
-  const W=800,H=340, padL=54,padR=26,padT=30,padB=42;
-  const plotW=W-padL-padR, plotH=H-padT-padB;
-  const N=r.nodes;
-
-  const t1=r.t1,t2=r.t2;
-  const segAB=[N.A,N.B];
-  const segBC=arcPts(N.B, r.R1, t1, 0, 'entry');
-  const segCD=[N.C,N.D];
-  const segDE=arcPts(N.D, r.R2, 0, t2, 'exit');
-  const segEF=[N.E,N.F];
-  const all=[...segAB,...segBC,...segCD,...segDE,...segEF];
-
-  let xMax=Math.max(r.TPD, ...all.map(p=>p.x), N.F.x);
-  let xMin=Math.min(0, ...all.map(p=>p.x));
-  let dMax=Math.max(0.001, ...all.map(p=>p.d), N.A.d, N.F.d);
-  let dMin=Math.min(0, ...all.map(p=>p.d), N.F.d);
-  const xr=(xMax-xMin)||1, dr=(dMax-dMin)||1;
-  const sx=plotW/xr, sy=plotH/dr;
-  const ve = sy/sx;
-
-  const X=x=>padL+(x-xMin)*sx;
-  const Y=d=>padT+(d-dMin)*sy;
-
-  document.getElementById('veLabel').textContent = 'Vertical exaggeration ≈ '+ (ve>=10?Math.round(ve): ve.toFixed(1)) +'×';
-
-  const poly=pts=>pts.map(p=>`${X(p.x).toFixed(1)},${Y(p.d).toFixed(1)}`).join(' ');
-
-  // theme-aware colors, read live so the diagram matches light/dark mode
-  const cHair    = cssVar('--hair');
-  const cSubtle  = cssVar('--ink-subtle');
-  const cTert    = cssVar('--ink-tertiary');
-  const cMuted   = cssVar('--ink-muted');
-  const cSuccess = cssVar('--success');
-  const cWarn    = cssVar('--warn');
-  const cPrimary = cssVar('--primary');
-  const cDanger  = cssVar('--danger');
-  const cCanvas  = cssVar('--canvas');
-  const cEarth   = cssVar('--earth-tint');
-  const surfCol = cSubtle;
-  const boreCol = feasible ? cPrimary : cDanger;
-
-  const gy0=Y(N.A.d), gyF=Y(N.F.d);
-  const earthTop = `${X(N.A.x)},${gy0} ${X(N.F.x)},${gyF}`;
-  const earth = `M ${X(xMin)} ${gy0} L ${X(N.A.x)} ${gy0} L ${X(N.F.x)} ${gyF} L ${X(xMax)} ${gyF} L ${X(xMax)} ${H-padB} L ${X(xMin)} ${H-padB} Z`;
-
-  let grid='';
-  const dTicks=4;
-  for(let i=0;i<=dTicks;i++){
-    const dv=dMin+(dMax-dMin)*i/dTicks; const yy=Y(dv);
-    grid+=`<line x1="${padL}" y1="${yy.toFixed(1)}" x2="${W-padR}" y2="${yy.toFixed(1)}" stroke="${cHair}" stroke-width="1"/>`;
-    grid+=`<text x="${padL-8}" y="${(yy+4).toFixed(1)}" fill="${cTert}" font-size="11" font-family="ui-monospace,monospace" text-anchor="end">${dv.toFixed(1)}</text>`;
+/* ============================ Rod-by-rod ============================ */
+function locAt(M,X){
+  const O=M.obs; if(!O) return {t:'Ground',zone:false};
+  const q=X-M.S1;
+  if(q<-1e-9) return {t:'Entry side',zone:false};
+  if(q>O.W+1e-9) return {t:'Exit side',zone:false};
+  if(O.kind==='channel'){
+    if(O.a>0&&q<O.a) return {t:'Left bank',zone:true};
+    if(O.a>0&&q>O.W-O.a) return {t:'Right bank',zone:true};
+    return {t:'Under '+O.word.toLowerCase()+' bed',zone:true};
   }
-  const xTicks=4;
-  for(let i=0;i<=xTicks;i++){
-    const xv=xMin+(xMax-xMin)*i/xTicks; const xx=X(xv);
-    grid+=`<text x="${xx.toFixed(1)}" y="${H-padB+18}" fill="${cTert}" font-size="11" font-family="ui-monospace,monospace" text-anchor="middle">${Math.round(xv)}</text>`;
+  return {t:'Under '+O.word.toLowerCase(),zone:true};
+}
+function buildRods(M,rodL,rod1){
+  const P=M.P, tot=P.total, rows=[];
+  const mk=(k,L,m)=>{
+    const r=P.atMD(m), z=M.ZE-r.d, gr=M.groundAt(r.x), lc=locAt(M,r.x);
+    const margin=(M.obs&&lc.zone)?M.obs.req(r.x-M.S1)-z:null;
+    return {k,L,m,x:r.x,d:r.d,z,pd:r.pitch/DEG,sec:r.sec,gr,cov:gr-z,loc:lc.t,zone:lc.zone,margin};
+  };
+  rows.push(mk(0,0,0));
+  let m=0, k=0; const cap=4000;
+  while(m<tot-1e-6&&k<cap){ let L=k===0?rod1:rodL; if(m+L>tot-1e-6) L=tot-m; m+=L; k++; rows.push(mk(k,L,m)); }
+  if(m<tot-1e-6) M.warns.push('Rod table stopped at 4,000 rods. Use a longer rod length.');
+  const b=P.bounds, marks=[['B',b.mdB,'entry curve starts'],['C',b.mdC,'bottom reached'],['D',b.mdD,'exit curve starts'],['E',b.mdE,'exit tangent']];
+  for(let i=1;i<rows.length;i++){
+    const a=rows[i-1], r=rows[i];
+    r.dx=r.x-a.x; r.dp=r.pd-a.pd; r.dpp=toPct(r.pd)-toPct(a.pd);
+    r.nodes=marks.filter(n=>n[1]>a.m+1e-9&&n[1]<=r.m+1e-9&&!(n[1]<=1e-9));
+    if(i===rows.length-1) r.nodes.push(['F',tot,'punch-out']);
+  }
+  rows[0].nodes=b.mdB<=1e-9?[['B',0,'entry curve starts']]:[];
+  return rows;
+}
+function toPitchDeg(v,f){ return f==='pct'?fromPct(v):f==='inc'?v-90:v; }
+function fromPitchDeg(d,f){ return f==='pct'?toPct(d):f==='inc'?90+d:d; }
+/* average-angle method from the tie-in, stops at the first blank reading */
+function actualChain(M){
+  const R=M.rods, f=ST.adv.fmt, out=[];
+  const tie=Number(ST.adv.tie), hasTie=String(ST.adv.tie).trim()!==''&&isFinite(tie);
+  let p=hasTie?toPitchDeg(tie,f):R[0].pd, x=0, z=M.ZE;
+  out[0]={x,z,p};
+  for(let i=1;i<R.length;i++){
+    const s=ST.adv.readings[R[i].k]; if(s==null||String(s).trim()==='') break;
+    const v=Number(s); if(!isFinite(v)) break;
+    const pn=toPitchDeg(v,f), pa=(p+pn)/2*DEG;
+    x+=R[i].L*Math.cos(pa); z+=R[i].L*Math.sin(pa); p=pn;
+    out[i]={x,z,p};
+  }
+  return out;
+}
+
+/* ============================ Render: form ============================ */
+function renderCross(){
+  $('#crossList').innerHTML=Object.keys(TYPES).map((k,i)=>{
+    const t=TYPES[k], sel=k===ST.type;
+    return `<label class="xopt${sel?' sel':''}"><input type="radio" name="xtype" value="${k}"${sel?' checked':''}>`+
+      `<span class="ic" aria-hidden="true">${t.icon}</span><span class="tx"><span class="t">${i+1}. ${t.name}</span><span class="s">${t.sub}</span></span><span class="radio"></span></label>`;
+  }).join('');
+}
+function fieldHTML(id){
+  const f=FIELDS[id], adv=ST.view==='advanced';
+  const unit=f.u==='ang'?(ST.unit==='pct'?'%':'°'):f.u;
+  const req=f.req===1||(f.req==='adv'&&adv);
+  const tag=req?'<span class="star" aria-label="required">★</span>':`<span class="pill">${esc(f.pill?pick(f.pill):'optional')}</span>`;
+  const sign=SIGNED.has(id);
+  let hint=pick(f.h);
+  if(id==='R1'||id==='R2'){ const od=Number(ST.chk.od); if(od>0){ const fs=Number(ST.chk.fos)>0?Number(ST.chk.fos):1; hint=`Min ≈ ${fmt(od*fs,0)} m for Ø${fmt(od,0)} mm pipe`; } }
+  return `<div class="fld"><label for="f_${id}">${esc(pick(f.l))} ${tag}</label><div class="ibox">`+
+    `<input id="f_${id}" data-id="${id}" type="number" step="any"${sign?'':' inputmode="decimal"'} autocomplete="off" placeholder="${esc(pick(f.ph))}" value="${esc(raw(id))}">`+
+    `<span class="u">${esc(unit)}</span></div>${hint?`<div class="hint">${esc(hint)}</div>`:''}</div>`;
+}
+function renderForm(){
+  const adv=ST.view==='advanced', t=TYPES[ST.type];
+  const groups=(adv?[['Rod details',['rodL','rod1']]]:[]).concat(GROUPS[ST.type]);
+  $('#fgrid').innerHTML=groups.map(g=>`<div class="grp">${g[0]}</div>`+g[1].map(fieldHTML).join('')).join('');
+  $('#modeBanner').innerHTML=`<span class="bi" aria-hidden="true">${t.icon}</span><span>${t.name}: ${t.banner}${adv?' · rod-by-rod plan':''}</span>`;
+  $$('.useg button').forEach(b=>b.classList.toggle('on',b.dataset.unit===ST.unit));
+}
+
+/* ============================ Render: shared ============================ */
+let CUR=null;
+function renderAll(){
+  const M=solve(); CUR=M;
+  $$('#fgrid input').forEach(i=>i.classList.toggle('err',M.bad.has(i.getAttribute('data-id'))));
+  renderVerdict(M); renderPill(M);
+  if(ST.view==='basic') renderBasic(M);
+  else if(ST.view==='advanced') renderAdv(M);
+  else if(ST.view==='checks') renderChecks(M);
+  save();
+}
+function status(M){ return (M.errs.length||M.fail.length||M.coverFail)?'bad':(M.warns.length?'warn':'ok'); }
+function renderVerdict(M){
+  const v=$('#verdict'); let cls, ic, title, body='', list=[];
+  if(M.errs.length){ cls='bad'; ic='!'; title='Fill the required fields'; list=M.errs; }
+  else if(M.fail.length){ cls='bad'; ic='✕'; title='Profile is not feasible'; body='One or more sections come out negative with these inputs:'; list=M.fail; }
+  else {
+    const P=M.P;
+    body=`HDD length ≈ <b>${fmt(P.total)} m</b> over <b>${fmt(P.TPD)} m</b> plan distance`+
+      (M.obs?` · setbacks <b>${fmt(M.S1)} m</b> entry / <b>${fmt(M.S2)} m</b> exit`:'')+
+      (M.rods?` · <b>${M.rods.length-1} rods</b>`:'')+'.';
+    if(M.coverFail){ cls='bad'; ic='✕'; title='Cover requirement not met'; list=[M.coverFail].concat(M.warns); }
+    else if(M.warns.length){ cls='warn'; ic='!'; title='Feasible — check the notes'; list=M.warns; }
+    else { cls='ok'; ic='✓'; title='Profile is feasible'; }
+  }
+  v.className='verdict '+cls;
+  v.innerHTML=`<div class="vic">${ic}</div><div><div class="vt">${title}</div>${body?`<div class="vd">${body}</div>`:''}`+
+    (list.length?`<ul>${list.map(x=>`<li>${x}</li>`).join('')}</ul>`:'')+
+    (M.notes.length&&!M.errs.length?`<ul class="vnotes">${M.notes.map(x=>`<li>${x}</li>`).join('')}</ul>`:'')+'</div>';
+}
+function renderPill(M){
+  const t=TYPES[ST.type], vn={basic:'Basic',advanced:'Advanced',checks:'Checks',info:'Guide'}[ST.view];
+  $('#fpill').innerHTML=`<span aria-hidden="true">⚙️</span><span class="pt">${t.name} · ${vn}</span><span class="dot ${status(M)}"></span>`;
+}
+const kpi=(k,v,u,hi,dp)=>`<div class="kpi${hi?' hi':''}"><div class="k">${k}</div><div class="v">${typeof v==='string'?v:fmt(v,dp)}${u?`<small>${u}</small>`:''}</div></div>`;
+
+/* ============================ Render: Basic ============================ */
+function renderBasic(M){
+  const show=!!(M.P&&!M.errs.length&&!M.fail.length);
+  $('#basicOut').classList.toggle('hidden',!show);
+  if(!show) return;
+  const P=M.P, O=M.obs, e=P.e, x=P.x, N=P.nodes;
+
+  /* setbacks */
+  $('#setbackCard').classList.toggle('hidden',!O);
+  $('#coverCard').classList.toggle('hidden',!O);
+  if(O){
+    const edge=O.kind==='channel'?'bank edge':(O.T==='road'?'road / ROW edge':'corridor edge');
+    $('#sbTitle').textContent='Setback from '+edge;
+    const tile=(lab,S,Smin,fix,ext)=>{
+      const low=fix&&S<Smin-1e-6;
+      const s=fix?`fixed · minimum ${fmt(Smin)} m`:(ext>1e-9?`minimum ${fmt(Smin)} m + ${fmt(ext)} m so curves meet`:`minimum · from the ${edge}`);
+      return `<div class="sb${low?' low':''}"><div class="k">${lab}</div><div class="v">${fmt(S)}<small> m</small></div><div class="s">${s}</div></div>`;
+    };
+    $('#sbTiles').innerHTML=tile('Entry setback',M.S1,M.S1min,M.fix1,M.ext1)+tile('Exit setback',M.S2,M.S2min,M.fix2,M.ext2);
+    const reqC=O.kind==='channel'?O.scour+O.Cb:O.C;
+    let k=kpi(O.word+' width',O.W,'m')+kpi('Total plan distance',P.TPD,'m',1)+kpi('Bottom elevation',M.zBot,'m');
+    k+=kpi(O.kind==='channel'?'Min cover under bed':'Min cover under '+O.word.toLowerCase(),M.cov.minU,'m');
+    if(O.kind==='channel') k+=kpi('Min cover under banks',M.cov.minK,'m');
+    k+=kpi('Required (from '+(O.kind==='channel'?'bed':'ground')+')',reqC,'m');
+    $('#sbKpis').innerHTML=k;
+    $('#sbNote').innerHTML=`Setback = horizontal distance from the entry (exit) point to the nearest ${edge}: the least distance at which the bore stays on or below the min-cover line under the ${O.kind==='channel'?'banks and the scoured bed':O.word.toLowerCase()}. Level datum 0 = ${O.kind==='channel'?'bank top':'natural ground at the crossing'}.`;
+
+    /* cover table */
+    $('#covBody').innerHTML=O.keys.map(([lab,q])=>{
+      const X=M.S1+q, z=M.ZE-P.depthAt(X), gr=O.ground(q), rq=O.req(q), need=gr-rq, cov=gr-z, ok=z<=rq+1e-6;
+      return `<tr><td class="l">${lab}</td><td>${fmt(X)}</td><td>${fmt(gr)}</td><td>${fmt(z)}</td><td>${fmt(cov)}</td><td>${fmt(need)}</td><td class="l ${ok?'okc':'lowc'}">${ok?'✓ OK':'⚠ LOW'}</td></tr>`;
+    }).join('');
+    $('#covNote').innerHTML=O.kind==='channel'
+      ?`Required cover on the bed = scour ${fmt(O.scour)} m + min cover ${fmt(O.Cb)} m, measured from the unscoured bed. Banks use ${fmt(O.Ck)} m below the bank surface.`
+      :`Required cover ${fmt(O.C)} m below natural ground across the full ${fmt(O.W)} m width.`;
   }
 
-  const nodes=[['A',N.A],['B',N.B],['C',N.C],['D',N.D],['E',N.E],['F',N.F]];
-  let marks='';
-  nodes.forEach(([lab,n])=>{
-    const cx=X(n.x), cy=Y(n.d);
-    marks+=`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.4" fill="${cCanvas}" stroke="${boreCol}" stroke-width="2"/>`;
-    const above = (lab==='A'||lab==='F');
-    marks+=`<text x="${cx.toFixed(1)}" y="${(cy+(above?-9:16)).toFixed(1)}" fill="${cMuted}" font-size="11.5" font-weight="600" text-anchor="middle">${lab}</text>`;
+  /* segments */
+  const segs=[['AB · Entry tangent','Straight',e.T,e.Th,e.Tv],['BC · Entry curve','Arc',e.arc,e.Ch,e.Cv],['CD · Bottom run','Straight',P.CD,P.CD,0],
+    ['DE · Exit curve','Arc',x.arc,x.Ch,x.Cv],['EF · Exit tangent','Straight',x.T,x.Th,x.Tv]];
+  $('#segBody').innerHTML=segs.map(s=>`<tr class="${s[2]<0?'neg':''}"><td class="l">${s[0]}</td><td class="l muted">${s[1]}</td><td>${fmt(s[2])}</td><td>${fmt(s[3])}</td><td>${fmt(s[4])}</td></tr>`).join('')+
+    `<tr class="tot"><td class="l">AF · HDD length</td><td></td><td class="num">${fmt(P.total)}</td><td>${fmt(P.TPD)}</td><td></td></tr>`;
+
+  /* key dimensions */
+  $('#kpis').innerHTML=kpi('HDD length (along bore)',P.total,'m',1)+kpi('Plan distance',P.TPD,'m')+
+    kpi('Bottom depth below entry',P.H1,'m')+kpi('Bottom depth below exit',P.H2,'m')+
+    kpi('Entry angle',fAng(P.t1/DEG))+kpi('Exit angle',fAng(P.t2/DEG))+
+    kpi('Curve ends (C) at ch.',N.C.x,'m')+kpi('Exit curve starts (D) at ch.',N.D.x,'m')+kpi('Bottom run length',P.CD,'m');
+
+  /* nodes */
+  const NL={A:'Entry point',B:'Start entry curve',C:'End entry curve',D:'Start exit curve',E:'End exit curve',F:'Exit point'};
+  $('#nodeBody').innerHTML=Object.keys(N).map(k=>{ const n=N[k]; return `<tr><td class="l">${k} <span class="muted" style="font-weight:500">· ${NL[k]}</span></td><td>${fmt(n.x)}</td><td>${fmt(M.ZE-n.d)}</td><td>${fmt(n.d)}</td><td>${fAng(n.p/DEG)}</td></tr>`; }).join('');
+  $('#nodeNote').textContent=O?`Elevation relative to ${O.kind==='channel'?'bank top':'natural ground'} = 0. Entry ground ${fmt(M.ZE)} m, exit ground ${fmt(M.ZX)} m.`:'Elevation relative to the entry ground = 0.';
+
+  renderStations(M);
+  drawPlot($('#svgB'),M,'basic'); legend($('#legB'),M,'basic');
+}
+function stationRows(M){
+  const P=M.P, O=M.obs; let D=Number(ST.dx); if(!(D>0)) D=10;
+  if(P.TPD/D>3000) D=P.TPD/3000;
+  const pts=[];
+  for(let x=0;x<P.TPD-1e-9;x+=D) pts.push({x,lab:''});
+  pts.push({x:P.TPD,lab:''});
+  const N=P.nodes; ['A','B','C','D','E','F'].forEach(k=>pts.push({x:N[k].x,lab:k}));
+  if(O){ const L=O.kind==='channel'?(O.a>0?[['Bank',0],['Toe',O.a],['Toe',O.W-O.a],['Bank',O.W]]:[['Bank',0],['Bank',O.W]]):[['Edge',0],['Edge',O.W]]; L.forEach(([l,q])=>pts.push({x:M.S1+q,lab:l})); }
+  pts.sort((a,b)=>a.x-b.x);
+  const out=[];
+  pts.forEach(p=>{ const last=out[out.length-1]; if(last&&Math.abs(last.x-p.x)<1e-6){ if(p.lab&&last.lab.indexOf(p.lab)<0) last.lab=last.lab?last.lab+' '+p.lab:p.lab; } else out.push({x:p.x,lab:p.lab}); });
+  out.forEach(r=>{ r.d=P.depthAt(r.x); r.z=M.ZE-r.d; r.gr=M.groundAt(r.x); r.cov=r.gr-r.z; r.pd=P.pitchAt(r.x)/DEG; });
+  return out;
+}
+function renderStations(M){
+  const rows=stationRows(M);
+  $('#staBody').innerHTML=rows.map(r=>`<tr${r.lab?' class="key"':''}><td class="l">${esc(r.lab)}</td><td>${fmt(r.x)}</td><td>${fmt(r.z)}</td><td>${fmt(r.d)}</td><td>${fmt(r.gr)}</td><td>${fmt(r.cov)}</td><td>${fAng(r.pd)}</td></tr>`).join('');
+}
+
+/* ============================ Render: Advanced ============================ */
+function renderAdv(M){
+  const show=!!(M.P&&!M.errs.length&&!M.fail.length&&M.rods);
+  $('#advOut').classList.toggle('hidden',!show);
+  if(!show) return;
+  const R=M.rods, P=M.P, n=R.length-1, rodL=num('rodL'), b=P.bounds;
+  const stepE=rodL/P.R1/DEG, stepX=rodL/P.R2/DEG;
+  const stepEp=toPct(P.t1/DEG)-toPct(P.t1/DEG-stepE), stepXp=toPct(P.t2/DEG)-toPct(P.t2/DEG-stepX);
+  const last=R[n], partial=Math.abs(last.L-rodL)>1e-6;
+  let minC=Infinity, minCk=null, maxD=0;
+  R.forEach(r=>{ if(r.zone&&r.cov<minC){ minC=r.cov; minCk=r.k; } if(r.d>maxD) maxD=r.d; });
+  let k=kpi('Rods required',String(n),'',1)+kpi('Drilled length (MD)',P.total,'m')+kpi(partial?'Last rod (partial)':'Last rod',last.L,'m')+
+    kpi('Steering · entry curve',`${fmt(stepE,3)}°`,'/rod')+kpi('Steering · exit curve',`${fmt(stepX,3)}°`,'/rod')+kpi('Max depth below entry',maxD,'m');
+  if(M.obs&&minCk!=null) k+=kpi('Min cover under '+M.obs.word.toLowerCase(),minC,`m · rod ${minCk}`);
+  $('#advKpis').innerHTML=k;
+  const cnt=[0,0,0,0,0]; R.forEach(r=>{ if(r.k) cnt[r.sec]++; });
+  $('#advChips').innerHTML=cnt.map((c,i)=>`<span class="chip"><i class="sd s${i}"></i>${SECL[i]} · ${c}</span>`).join('');
+
+  /* drilling programme */
+  const kAt=md=>{ for(let i=1;i<R.length;i++) if(R[i].m>=md-1e-6) return i; return n; };
+  const kB=b.mdB<=1e-9?1:kAt(b.mdB), kC=kAt(b.mdC), kD=kAt(b.mdD), kE=kAt(b.mdE);
+  const li=(rn,html)=>`<li><span class="rn">${rn}</span>${html}</li>`;
+  let pr='';
+  if(b.mdB>1e-9) pr+=li(kB>1?`1–${kB-1}`:'1',`Hold entry pitch <b>${fBoth(-P.t1/DEG)}</b> along the entry tangent (${fmt(P.e.T,1)} m).`);
+  pr+=li(kB,`<b>Entry curve starts (B)</b> at MD ${fmt(b.mdB,1)} m. Steer up ≈ <b>${fmt(stepE,2)}° per rod</b> (≈ ${fmt(stepEp,2)}% at first).`);
+  pr+=li(kC,`<b>Level out (C)</b> at MD ${fmt(b.mdC,1)} m, depth ${fmt(P.H1)} m below entry. Pitch 0%.`);
+  if(kD>kC+1) pr+=li(`${kC+1}–${kD-1}`,`Hold level along the bottom run (${fmt(P.CD,1)} m).`);
+  pr+=li(kD,`<b>Exit curve starts (D)</b> at MD ${fmt(b.mdD,1)} m. Steer up ≈ <b>${fmt(stepX,2)}° per rod</b> (≈ ${fmt(stepXp,2)}% at the end).`);
+  if(P.x.T>1e-9) pr+=li(kE,`<b>Exit tangent (E)</b> at MD ${fmt(b.mdE,1)} m. Hold <b>${fBoth(P.t2/DEG)}</b>.`);
+  pr+=li(n,`<b>Punch-out (F)</b> at MD ${fmt(P.total,1)} m, ${fmt(P.TPD,1)} m from entry.${partial?` Last rod ${fmt(last.L,2)} m.`:''}`);
+  $('#advProg').innerHTML=pr;
+
+  renderRodTable(M);
+  updateActual(M);
+  drawPlot($('#svgA'),M,'adv'); legend($('#legA'),M,'adv');
+}
+function renderRodTable(M){
+  const R=M.rods, tr=ST.adv.track, u=ST.unit==='pct'?'%':'°', f=ST.adv.fmt, fu=f==='pct'?'%':'°';
+  $('#trkOn').checked=tr; $('#trkOpts').classList.toggle('hidden',!tr); $('#trkSum').classList.toggle('hidden',!tr);
+  $('#trkFmt').value=f; $('#trkTie').value=ST.adv.tie; $('#trkTol').value=ST.adv.tol;
+  $('#btnPlineAct').classList.toggle('hidden',!tr);
+  /* column order puts what the driller needs first; as-drilled columns sit next to MD so no sideways scrolling while logging */
+  const C=[['Rod','','l',r=>`<td class="l">${r.k===0?'Entry':r.k}</td>`],['MD','m','',r=>`<td>${fmt(r.m)}</td>`]];
+  if(tr) C.push(
+    ['Reading',fu+' · plan shown','',r=>r.k===0?`<td class="l muted">tie-in</td>`:`<td class="rdc"><input class="rd" data-k="${r.k}" type="number" step="any" aria-label="Reading for rod ${r.k}" placeholder="${fmt(fromPitchDeg(r.pd,f),2).replace(/,/g,'')}" value="${esc(ST.adv.readings[r.k]||'')}"></td>`],
+    ['Δ elev','vs plan, m','',()=>'<td class="adz"></td>'],['Act. away','m','',()=>'<td class="ax"></td>'],['Act. elev','m','',()=>'<td class="az"></td>'],['Act. cover','m','',()=>'<td class="ac"></td>']);
+  C.push(
+    ['Pitch','%','',r=>`<td>${fmt(toPct(r.pd))}</td>`],['Pitch','°','',r=>`<td>${fmt(r.pd)}</td>`],['Inclination','° from vert.','',r=>`<td>${fmt(90+r.pd)}</td>`],
+    ['Away','m','',r=>`<td>${fmt(r.x)}</td>`],['Depth','below entry','',r=>`<td>${fmt(r.d)}</td>`],
+    ['Cover','m','',r=>{ const cc=r.margin==null?'':(r.margin>=-1e-6?'okc':'lowc'); return `<td class="${cc}">${fmt(r.cov)}${cc==='lowc'?' ⚠':''}</td>`; }],
+    ['Elevation','m','',r=>`<td>${fmt(r.z)}</td>`],['Δ pitch',u+' / rod','',r=>`<td>${r.k?(ST.unit==='pct'?fmt(r.dpp,3):fmt(r.dp,3)):''}</td>`],
+    ['Δ away','m','',r=>`<td>${r.k?fmt(r.dx):''}</td>`],['Section','','l',r=>`<td class="l"><i class="sd s${r.sec}"></i>${SECN[r.sec]}</td>`],
+    ['Length','m','',r=>`<td>${r.k?fmt(r.L):''}</td>`],['Ground','m','',r=>`<td>${fmt(r.gr)}</td>`],
+    ['Location','','l',r=>`<td class="l">${r.loc}${(r.nodes||[]).map(n=>`<span class="nb" title="${n[2]}">${n[0]}</span>`).join('')}</td>`]);
+  $('#rodTbl thead').innerHTML='<tr>'+C.map(h=>`<th${h[2]?' class="l"':''}>${h[0]}${h[1]?`<small>${h[1]}</small>`:''}</th>`).join('')+'</tr>';
+  $('#rodTbl tbody').innerHTML=R.map(r=>`<tr${r.nodes&&r.nodes.length?' class="key"':''}>`+C.map(c=>c[3](r)).join('')+'</tr>').join('');
+}
+function updateActual(M){
+  M.act=null;
+  if(!ST.adv.track||!M.rods) return;
+  const A=actualChain(M); M.act=A;
+  const tb=$('#rodTbl tbody'), tol=Number(ST.adv.tol)>0?Number(ST.adv.tol):0.5;
+  let maxD=0, maxK=null, last=null;
+  for(let i=0;i<M.rods.length;i++){
+    const tr=tb.rows[i]; if(!tr) continue;
+    const cx=tr.querySelector('.ax'), cz=tr.querySelector('.az'), cd=tr.querySelector('.adz'), cc=tr.querySelector('.ac');
+    if(!cx) continue;
+    const a=A[i];
+    if(a){
+      const r=M.rods[i], dz=a.z-r.z;
+      cx.textContent=fmt(a.x); cz.textContent=fmt(a.z); cd.textContent=(dz>0.005?'+':'')+fmt(dz); cc.textContent=fmt(M.groundAt(a.x)-a.z);
+      cd.className='adz '+(Math.abs(dz)>tol?'bad':'good');
+      if(i>0){ last={k:r.k,dz,dx:a.x-r.x}; if(Math.abs(dz)>maxD){ maxD=Math.abs(dz); maxK=r.k; } }
+    } else { cx.textContent=cz.textContent=cd.textContent=cc.textContent=''; cd.className='adz'; }
+  }
+  const nLog=A.length-1;
+  $('#trkSum').innerHTML=nLog?`Logged <b>${nLog}</b> rod${nLog>1?'s':''} · at rod ${last.k}: <b>${last.dz>=0?'+':''}${fmt(last.dz)} m</b> vs plan elevation, ${last.dx>=0?'+':''}${fmt(last.dx)} m away · worst |Δ| <b>${fmt(maxD)} m</b> (rod ${maxK})${maxD>tol?' ⚠ over the alarm limit':''}.`
+    :'Enter the pitch reading at the end of each rod (in the format above). The as-drilled path is computed by the average-angle method and compared with the plan. Logging stops at the first blank rod.';
+}
+
+/* ============================ Render: Checks ============================ */
+function checkRow(label,actual,min,unit){
+  if(!isFinite(actual)||!isFinite(min)) return '';
+  const pass=actual>=min-1e-9;
+  return `<div class="checkrow ${pass?'pass':'fail'}"><span class="cl">${label}: <b>${fmt(actual)} ${unit}</b></span><span class="cv"><i></i>${pass?'OK — meets minimum':'Below minimum'}</span></div>`;
+}
+function renderChecks(M){
+  const OD=Number(ST.chk.od), fos=Number(ST.chk.fos)>0?Number(ST.chk.fos):1, Dm=OD>0?OD/1000:NaN;
+  const R1=num('R1'), R2=isFinite(num('R2'))?num('R2'):R1;
+  const rMin=Dm>0?1000*Dm*fos:NaN;
+  $('#ck1').innerHTML=Dm>0?`<div class="bigres"><div class="k">Suggested minimum radius</div><div class="v">${fmt(rMin)} m</div></div>`+
+    checkRow('Entry ROC (R1)',R1,rMin,'m')+checkRow('Exit ROC (R2)',R2,rMin,'m'):'<p class="sub">Enter the pipe OD above.</p>';
+  const byDia=5*Dm, rec=Math.max(byDia,4.6);
+  let c2=Dm>0?`<div class="kv"><span class="lab">5 × OD (arching)</span><span class="val">${fmt(byDia)} m</span></div><div class="kv"><span class="lab">Absolute floor (PRCI)</span><span class="val">4.60 m</span></div><div class="bigres"><div class="k">Recommended minimum cover</div><div class="v">${fmt(rec)} m</div></div>`:'<p class="sub">Enter the pipe OD above.</p>';
+  if(Dm>0&&M.P&&!M.fail.length&&!M.errs.length){
+    if(M.obs){ c2+=checkRow('Achieved cover under '+(M.obs.kind==='channel'?'the bed':'the '+M.obs.word.toLowerCase()),M.cov.minU,rec,'m'); if(M.obs.kind==='channel') c2+=checkRow('Achieved cover under the banks',M.cov.minK,rec,'m'); }
+    else { c2+=checkRow('Entry depth to bottom',M.P.H1,rec,'m')+checkRow('Exit depth to bottom',M.P.H2,rec,'m'); }
+  }
+  $('#ck2').innerHTML=c2;
+  const rodL=num('rodL');
+  if(rodL>0&&R1>0){
+    const s1=rodL/R1/DEG, s2=rodL/R2/DEG;
+    $('#ck3').innerHTML=`<div class="kv"><span class="lab">Rod length</span><span class="val">${fmt(rodL)} m</span></div>`+
+      `<div class="kv"><span class="lab">Entry curve (R1 ${fmt(R1,0)} m)</span><span class="val">${fmt(s1,3)}° / rod</span></div>`+
+      `<div class="kv"><span class="lab">Exit curve (R2 ${fmt(R2,0)} m)</span><span class="val">${fmt(s2,3)}° / rod</span></div>`+
+      `<div class="kv"><span class="lab">Rods through entry curve</span><span class="val">${fmt(angDeg('ang1')/s1,1)}</span></div>`;
+  } else $('#ck3').innerHTML='<p class="sub">Enter a rod length (Advanced page) and an entry ROC.</p>';
+}
+
+/* ============================ Profile drawing (SVG) ============================ */
+function legend(el,M,mode){
+  const it=[['tan','Straight (tangent)'],['arc','Curve (arc)'],['gnd','Ground']];
+  if(M.obs){ it.push(['cov','Min-cover line']); if(M.obs.kind==='channel') it.push(['wat','Water']); }
+  if(mode==='adv'){ it.push(['rod','Rod joints']); if(ST.adv.track) it.push(['act','As-drilled']); }
+  el.innerHTML=it.map(([k,t])=>`<span><i class="lg lg-${k}"></i>${t}</span>`).join('');
+}
+function drawPlot(svg,M,mode){
+  if(!svg||!M.P) return;
+  const bw=svg.parentNode.clientWidth; if(!bw) return;
+  const Wp=Math.round(bw), narrow=Wp<560;
+  const Hp=narrow?Math.round(Wp*0.98):Math.round(clamp(Wp*0.46,320,480));
+  svg.setAttribute('viewBox',`0 0 ${Wp} ${Hp}`);
+  const P=M.P, O=M.obs, TPD=P.TPD, t1=P.t1, t2=P.t2;
+  const padL=narrow?40:50, padR=narrow?8:14, padT=O?(narrow?62:70):(narrow?46:50), padB=30;
+  const mL=narrow?40:62, mR=narrow?36:66, rs=narrow?0.62:1;
+  const pw=Wp-padL-padR, ph=Hp-padT-padB;
+  const sx=(pw-mL-mR)/TPD, xMin=-mL/sx;
+  let zHi=Math.max(M.ZE,M.ZX,0), zLo=M.zBot;
+  if(O){ if(O.kind==='flat') zHi=Math.max(zHi,O.emb); zLo=Math.min(zLo,O.reqMin); }
+  const act=(mode==='adv'&&ST.adv.track&&M.act&&M.act.length>1)?M.act:null;
+  if(act) act.forEach(a=>{ zLo=Math.min(zLo,a.z); zHi=Math.max(zHi,a.z); });
+  const span=Math.max(zHi-zLo,1), zTop=zHi+span*0.16, zBot=zLo-span*0.14, sy=ph/(zTop-zBot);
+  const X=x=>padL+(x-xMin)*sx, Y=z=>padT+(zTop-z)*sy, f1=v=>v.toFixed(1);
+  const pts=a=>a.map(p=>f1(X(p[0]))+','+f1(Y(p[1]))).join(' ');
+  const S1=M.S1||0;
+  let s='';
+
+  /* grid */
+  const zs=niceStep((zTop-zBot)/5), zdp=zs<1?1:0;
+  for(let z=Math.ceil(zBot/zs)*zs;z<=zTop+1e-9;z+=zs){ const y=f1(Y(z)); s+=`<line class="g-grid" x1="${padL}" x2="${Wp-padR}" y1="${y}" y2="${y}"/><text class="tk" x="${padL-6}" y="${f1(Y(z)+3.5)}" text-anchor="end">${(Math.abs(z)<1e-9?0:z).toFixed(zdp)}</text>`; }
+  const xs=niceStep(TPD/(narrow?3.5:7));
+  for(let x=0;x<=TPD+1e-9;x+=xs){ const xx=f1(X(x)); s+=`<line class="g-grid" x1="${xx}" x2="${xx}" y1="${padT}" y2="${padT+ph}"/><text class="tk" x="${xx}" y="${padT+ph+16}" text-anchor="middle">${Math.round(x)}</text>`; }
+  s+=`<text class="g-axis" x="4" y="${padT-6}">EL (m)</text><text class="g-axis" x="4" y="${padT+ph+16}">CH (m)</text>`;
+
+  /* ground + earth */
+  const xMaxW=TPD+mR/sx;
+  const G=[[xMin,M.ZE],[0,M.ZE]];
+  if(O){ G.push([S1,0]); O.outline.forEach(p=>G.push([S1+p[0],p[1]])); }
+  G.push([TPD,M.ZX],[xMaxW,M.ZX]);
+  s+=`<polygon class="g-earth" points="${pts(G)} ${f1(X(xMaxW))},${padT+ph} ${f1(X(xMin))},${padT+ph}"/>`;
+
+  /* obstacle */
+  if(O&&O.kind==='channel'){
+    const a=O.a, W=O.W, Hb=O.Hb, wD=O.wD;
+    if(wD<Hb-1e-9){
+      const xl=a>0?a*(wD/Hb):0, yw=Y(-wD);
+      s+=`<polygon class="g-water" points="${pts([[S1+xl,-wD],[S1+a,-Hb],[S1+W-a,-Hb],[S1+W-xl,-wD]])}"/>`;
+      s+=`<line class="g-wline" x1="${f1(X(S1+xl))}" x2="${f1(X(S1+W-xl))}" y1="${f1(yw)}" y2="${f1(yw)}"/>`;
+      const dep=Y(-Hb)-yw;
+      if(dep>14){ [0.22,0.5,0.78].forEach(fr=>{ const wx=X(S1+W*fr); s+=`<path class="g-wave" d="M${f1(wx-9)} ${f1(yw+6)} q4.5 -3.5 9 0 t9 0"/>`; }); }
+      const ly=dep>30?yw+dep*0.62:yw-6;
+      s+=`<text class="g-olab" x="${f1(X(S1+W/2))}" y="${f1(ly)}" text-anchor="middle">${O.word.toUpperCase()}</text>`;
+    } else s+=`<text class="g-olab" x="${f1(X(S1+W/2))}" y="${f1(Y(0)-6)}" text-anchor="middle">${O.word.toUpperCase()}</text>`;
+    const ch=O.outline.map(p=>[S1+p[0],p[1]]);
+    if(O.lining) s+=`<polyline class="g-lining" points="${pts(ch)}"/>`;
+    s+=`<polyline class="g-bed" points="${pts(ch)}"/>`;
+    if(O.scour>0){ const ys=f1(Y(-Hb-O.scour)); s+=`<line class="g-scour" x1="${f1(X(S1+a))}" x2="${f1(X(S1+W-a))}" y1="${ys}" y2="${ys}"/><text class="g-slab" x="${f1(X(S1+a)+4)}" y="${f1(Y(-Hb-O.scour)-3)}">scour</text>`; }
+  } else if(O){
+    const W=O.W, eh=Math.max(O.emb*sy,O.T==='rail'?9:5), y0=Y(0), yt=y0-eh;
+    if(O.T==='road'){
+      const b0=X(S1+W*0.12), b1=X(S1+W*0.88), t0=X(S1+W*0.2), t1x=X(S1+W*0.8);
+      s+=`<polygon class="g-road" points="${f1(b0)},${f1(y0)} ${f1(t0)},${f1(yt)} ${f1(t1x)},${f1(yt)} ${f1(b1)},${f1(y0)}"/>`;
+      s+=`<line class="g-roadline" x1="${f1(t0+3)}" x2="${f1(t1x-3)}" y1="${f1(yt+2)}" y2="${f1(yt+2)}"/>`;
+    } else {
+      const b0=X(S1+W*0.18), b1=X(S1+W*0.82), t0=X(S1+W*0.32), t1x=X(S1+W*0.68);
+      s+=`<polygon class="g-ballast" points="${f1(b0)},${f1(y0)} ${f1(t0)},${f1(yt)} ${f1(t1x)},${f1(yt)} ${f1(b1)},${f1(y0)}"/>`;
+      for(let xx=t0+2;xx<t1x-2;xx+=6) s+=`<rect class="g-sleeper" x="${f1(xx)}" y="${f1(yt-2.5)}" width="3.2" height="2.5"/>`;
+      s+=`<line class="g-rail" x1="${f1(t0)}" x2="${f1(t1x)}" y1="${f1(yt-3.5)}" y2="${f1(yt-3.5)}"/>`;
+    }
+    [S1,S1+W].forEach(xe=>{ const xp=f1(X(xe)); s+=`<line class="g-post" x1="${xp}" x2="${xp}" y1="${f1(y0)}" y2="${f1(y0-13)}"/>`; });
+    s+=`<text class="g-olab2" x="${f1(X(S1+W/2))}" y="${f1(yt-10)}" text-anchor="middle">${O.word.toUpperCase()}</text>`;
+  }
+  s+=`<polyline class="g-ground" points="${pts(G)}"/>`;
+
+  /* min-cover line */
+  if(O){
+    const E=O.samples.map(q=>[S1+q,O.req(q)]);
+    s+=`<polyline class="g-cover" points="${pts(E)}"/>`;
+    if(!narrow&&mode!=='adv'&&(P.CD*sx>120)){ const lx=X(S1+O.W*0.5), lz=O.req(O.W*0.5); s+=`<text class="g-clab" x="${f1(lx)}" y="${f1(Y(Math.min(lz,M.ZE-P.depthAt(S1+O.W*0.5)))+15)}" text-anchor="middle">min-cover line</text>`; }
+  }
+
+  /* bore path */
+  const b=P.bounds, sec=[[],[],[],[],[]], push=(i,m)=>{ const r=P.atMD(m); sec[i].push([r.x,M.ZE-r.d]); };
+  push(0,0); push(0,b.mdB);
+  for(let j=0;j<=40;j++) push(1,b.mdB+(b.mdC-b.mdB)*j/40);
+  push(2,b.mdC); push(2,b.mdD);
+  for(let j=0;j<=40;j++) push(3,b.mdD+(b.mdE-b.mdD)*j/40);
+  push(4,b.mdE); push(4,b.mdF);
+  s+=`<polyline class="g-glow" points="${pts([].concat.apply([],sec))}"/>`;
+  sec.forEach((p,i)=>{ s+=`<polyline class="${i%2?'g-arc':'g-tan'}" points="${pts(p)}"/>`; });
+
+  /* cover dimension at the obstacle centre */
+  if(O){
+    const q=O.W/2, Xc=S1+q, zg=O.ground(q), zp=M.ZE-P.depthAt(Xc), cx=X(Xc), y1=Y(zg), y2=Y(zp);
+    if(y2-y1>10){
+      s+=`<line class="g-cdim" x1="${f1(cx)}" x2="${f1(cx)}" y1="${f1(y1+2)}" y2="${f1(y2-2)}"/>`;
+      s+=`<polygon class="g-carrow" points="${f1(cx)},${f1(y1+1)} ${f1(cx-3)},${f1(y1+7)} ${f1(cx+3)},${f1(y1+7)}"/><polygon class="g-carrow" points="${f1(cx)},${f1(y2-1)} ${f1(cx-3)},${f1(y2-7)} ${f1(cx+3)},${f1(y2-7)}"/>`;
+    }
+    s+=`<text class="g-cdimt" x="${f1(cx+6)}" y="${f1((y1+y2)/2+4)}">${narrow?'':'cover '}${fmt(zg-zp)} m</text>`;
+  }
+
+  /* rods */
+  if(mode==='adv'&&M.rods){
+    const R=M.rods, pxPer=(sx*TPD)/Math.max(1,R.length-1);
+    const every=pxPer<3?Math.ceil(3/pxPer):1;
+    const lab=[1,2,5,10,20,25,50,100,200,500].find(v=>v*pxPer>=30)||1000;
+    for(let i=1;i<R.length;i++){
+      const r=R[i], cx=X(r.x), cy=Y(r.z);
+      if(i%every===0||i===R.length-1) s+=`<circle class="g-rod" cx="${f1(cx)}" cy="${f1(cy)}" r="2.3"/>`;
+      if(r.k%lab===0&&i<R.length-1) s+=`<text class="g-rodlab" x="${f1(cx)}" y="${f1(cy+13)}" text-anchor="middle">${r.k}</text>`;
+    }
+  }
+  if(act){
+    s+=`<polyline class="g-act" points="${pts(act.filter(Boolean).map(a=>[a.x,a.z]))}"/>`;
+    act.forEach((a,i)=>{ if(a&&i) s+=`<rect class="g-actpt" x="${f1(X(a.x)-2)}" y="${f1(Y(a.z)-2)}" width="4" height="4"/>`; });
+  }
+
+  /* nodes */
+  const N=P.nodes;
+  ['A','B','C','D','E','F'].forEach(k=>{
+    const n=N[k], cx=X(n.x), cy=Y(M.ZE-n.d);
+    s+=`<circle class="g-node" cx="${f1(cx)}" cy="${f1(cy)}" r="3.6"/>`;
+    if(k!=='A'&&k!=='F') s+=`<text class="g-nlab" x="${f1(cx)}" y="${f1(cy+(mode==='adv'?25:17))}" text-anchor="middle">${k}</text>`;
   });
 
-  const axis=`<text x="${padL-40}" y="${padT-14}" fill="${cSubtle}" font-size="10.5">Depth (m)</text>
-              <text x="${W-padR}" y="${H-6}" fill="${cSubtle}" font-size="10.5" text-anchor="end">Chainage (m)</text>`;
+  /* rig at entry, pipe string at exit */
+  const ax=X(0), ay=Y(M.ZE);
+  let ux=Math.cos(t1)*sx, uy=Math.sin(t1)*sy; const ul=Math.hypot(ux,uy); ux/=ul; uy/=ul;
+  const mx=ax-ux*44*rs, my=ay-uy*44*rs;
+  s+=`<g class="g-rig"><rect x="${f1(ax-50*rs)}" y="${f1(ay-8*rs)}" width="${f1(44*rs)}" height="${f1(8*rs)}" rx="${f1(4*rs)}"/>`+
+     `<line class="fr" x1="${f1(ax-44*rs)}" y1="${f1(ay-8*rs)}" x2="${f1(mx)}" y2="${f1(my)}"/><line x1="${f1(ax)}" y1="${f1(ay)}" x2="${f1(mx)}" y2="${f1(my)}"/>`+
+     `<circle cx="${f1(mx)}" cy="${f1(my)}" r="${f1(4.5*rs)}"/></g>`;
+  s+=`<text class="g-cap" x="${f1(ax-5)}" y="${f1(ay+16)}" text-anchor="end">ENTRY</text>`;
+  const fx=X(TPD), fy=Y(M.ZX);
+  let vx=Math.cos(t2)*sx, vy=-Math.sin(t2)*sy; const vl=Math.hypot(vx,vy); vx/=vl; vy/=vl;
+  const p1x=fx+vx*22*rs, p1y=fy+vy*22*rs, endX=Math.min(Wp-3,p1x+56*rs);
+  let rol=''; [14,32,50].forEach(o=>{ const rx=p1x+o*rs; if(rx<endX-2) rol+=`<circle cx="${f1(rx)}" cy="${f1(p1y+5)}" r="3"/><line x1="${f1(rx)}" x2="${f1(rx)}" y1="${f1(p1y+8)}" y2="${f1(fy)}"/>`; });
+  s+=`<g class="g-pipe"><polyline points="${f1(fx)},${f1(fy)} ${f1(p1x)},${f1(p1y)} ${f1(endX)},${f1(p1y)}"/>${rol}</g>`;
+  s+=`<text class="g-cap" x="${f1(fx+5)}" y="${f1(fy+16)}">EXIT</text>`;
 
-  svg.innerHTML = `
-    ${grid}
-    <path d="${earth}" fill="${cEarth}" stroke="none"/>
-    <polyline points="${earthTop}" fill="none" stroke="${surfCol}" stroke-width="1.6" stroke-dasharray="5 4"/>
-    <polyline points="${poly(segAB)}" fill="none" stroke="${cSuccess}" stroke-width="3" stroke-linecap="round"/>
-    <polyline points="${poly(segBC)}" fill="none" stroke="${cWarn}" stroke-width="3" stroke-linecap="round"/>
-    <polyline points="${poly(segCD)}" fill="none" stroke="${cSuccess}" stroke-width="3" stroke-linecap="round"/>
-    <polyline points="${poly(segDE)}" fill="none" stroke="${cWarn}" stroke-width="3" stroke-linecap="round"/>
-    <polyline points="${poly(segEF)}" fill="none" stroke="${cSuccess}" stroke-width="3" stroke-linecap="round"/>
-    ${marks}
-    ${axis}
-  `;
+  /* dimension lines */
+  const yd=padT-(O?24:20);
+  const dim=(xa,xb,cap)=>{
+    const x1=X(xa), x2=X(xb), w=x2-x1; if(w<2) return;
+    let t=''; t+=`<line class="g-dim" x1="${f1(x1)}" x2="${f1(x2)}" y1="${yd}" y2="${yd}"/><line class="g-dim" x1="${f1(x1)}" x2="${f1(x1)}" y1="${yd-5}" y2="${yd+5}"/><line class="g-dim" x1="${f1(x2)}" x2="${f1(x2)}" y1="${yd-5}" y2="${yd+5}"/>`;
+    if(w>18) t+=`<polygon class="g-arrow" points="${f1(x1)},${yd} ${f1(x1+6)},${yd-3} ${f1(x1+6)},${yd+3}"/><polygon class="g-arrow" points="${f1(x2)},${yd} ${f1(x2-6)},${yd-3} ${f1(x2-6)},${yd+3}"/>`;
+    let val=fmt(xb-xa,1)+' m'; if(val.length*6.6>w-4) val=fmt(xb-xa,0); if(val.length*6.6>w-2) val='';
+    if(val) t+=`<text class="g-dimv" x="${f1(x1+w/2)}" y="${yd-5}" text-anchor="middle">${val}</text>`;
+    if(cap&&cap.length*6.4+8<w) t+=`<text class="g-dimc" x="${f1(x1+w/2)}" y="${yd-19}" text-anchor="middle">${cap}</text>`;
+    s+=t;
+  };
+  const ext=(xw,zw)=>{ s+=`<line class="g-ext" x1="${f1(X(xw))}" x2="${f1(X(xw))}" y1="${yd+5}" y2="${f1(Y(zw)-2)}"/>`; };
+  if(O){ dim(0,S1,'ENTRY SETBACK'); dim(S1,S1+O.W,O.word.toUpperCase()); dim(S1+O.W,TPD,'EXIT SETBACK'); ext(0,M.ZE); ext(S1,0); ext(S1+O.W,0); ext(TPD,M.ZX); }
+  else { dim(0,TPD,'PLAN DISTANCE'); ext(0,M.ZE); ext(TPD,M.ZX); }
+
+  s+=`<g class="hov"></g>`;
+  svg.innerHTML=s;
+  svg._ctx={M,mode,X,Y,sx,xMin,padL,padT,ph,Wp,Hp};
+  const ve=sy/sx, veEl=mode==='adv'?$('#veA'):$('#veB');
+  if(veEl) veEl.textContent='V.E. ≈ '+(ve>=10?Math.round(ve):ve.toFixed(1))+'×';
 }
-
-/* ============================ Render — Checks tab ============================ */
-function checkRow(label, actualVal, minVal, unit){
-  if(!isFinite(actualVal) || !isFinite(minVal)) return '';
-  const pass = actualVal >= minVal;
-  return `<div class="checkrow ${pass?'pass':'fail'}">
-    <span class="cl">${label}: <b>${fmt(actualVal,2)} ${unit}</b></span>
-    <span class="cv"><span class="dot"></span>${pass? 'OK — meets minimum' : 'Below minimum'}</span>
-  </div>`;
+function hoverAt(svg,clientX){
+  const c=svg._ctx; if(!c) return;
+  const M=c.M, P=M.P, r=svg.getBoundingClientRect(); if(!r.width) return;
+  const px=(clientX-r.left)*(c.Wp/r.width);
+  let x=clamp(c.xMin+(px-c.padL)/c.sx,0,P.TPD), rod=null;
+  if(c.mode==='adv'&&M.rods){ let bi=0, bd=Infinity; M.rods.forEach((q,i)=>{ const d=Math.abs(q.x-x); if(d<bd){ bd=d; bi=i; } }); rod=M.rods[bi]; x=rod.x; }
+  const z=rod?rod.z:M.ZE-P.depthAt(x), gr=M.groundAt(x), pd=rod?rod.pd:P.pitchAt(x)/DEG;
+  const L=[];
+  if(rod){ L.push(`${rod.k===0?'Entry':'Rod '+rod.k} · MD ${fmt(rod.m,1)}`); L.push(`Away ${fmt(x,1)} m`); }
+  else L.push(`Ch ${fmt(x,1)} m`);
+  L.push(`Elev ${fmt(z)} m`,`Cover ${fmt(gr-z)} m`,`Pitch ${fmt(toPct(pd))}% ${fmt(pd,1)}°`);
+  const cx=c.X(x), cy=c.Y(z), bw=158, bh=L.length*16+10;
+  let bx=cx+12; if(bx+bw>c.Wp-4) bx=cx-12-bw; if(bx<2) bx=2;
+  const by=c.padT+6;
+  const h=svg.querySelector('.hov'); if(!h) return;
+  h.innerHTML=`<line class="h-line" x1="${cx.toFixed(1)}" x2="${cx.toFixed(1)}" y1="${c.padT}" y2="${c.padT+c.ph}"/><circle class="h-dot" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="5"/>`+
+    `<rect class="h-box" x="${bx.toFixed(1)}" y="${by}" width="${bw}" height="${bh}" rx="8"/>`+
+    L.map((t,i)=>`<text class="h-t${i===0?' h-t1':''}" x="${(bx+10).toFixed(1)}" y="${by+19+i*16}">${t}</text>`).join('');
 }
+function drawVisible(){ if(!CUR) return; if(ST.view==='basic') drawPlot($('#svgB'),CUR,'basic'); if(ST.view==='advanced') drawPlot($('#svgA'),CUR,'adv'); }
 
-function renderChecks(){
-  const OD_mm = num('pipeOD');
-  const Dm = OD_mm>0 ? OD_mm/1000 : NaN;
-
-  // --- Check 1: minimum bend radius ---
-  const fos = num('radiusFOS');
-  const rMin = (Dm>0 && fos>0) ? 1000 * Dm * fos : NaN;
-  document.getElementById('rMinOut').textContent = isFinite(rMin) ? fmt(rMin)+' m' : '—';
-
-  const R1 = num('R1'), R2 = num('R2');
-  let radiusHtml = '';
-  if(isFinite(rMin)){
-    radiusHtml += checkRow('Entry ROC (R1) on Profile tab', R1, rMin, 'm');
-    radiusHtml += checkRow('Exit ROC (R2) on Profile tab', R2, rMin, 'm');
+/* ============================ Exports ============================ */
+function yScale(){ const v=Number(ST.ys); return v>0?v:1; }
+function denseBore(M){
+  const P=M.P, b=P.bounds, out=[];
+  const add=m=>{ const r=P.atMD(m), p=[r.x,M.ZE-r.d], l=out[out.length-1]; if(!l||Math.abs(l[0]-p[0])>1e-6||Math.abs(l[1]-p[1])>1e-6) out.push(p); };
+  add(0); add(b.mdB);
+  const n1=Math.max(8,Math.ceil((b.mdC-b.mdB)/2)); for(let j=1;j<=n1;j++) add(b.mdB+(b.mdC-b.mdB)*j/n1);
+  add(b.mdD);
+  const n2=Math.max(8,Math.ceil((b.mdE-b.mdD)/2)); for(let j=1;j<=n2;j++) add(b.mdD+(b.mdE-b.mdD)*j/n2);
+  add(b.mdF);
+  return out;
+}
+const pline=a=>{ const ys=yScale(); return a.map(p=>p[0].toFixed(3)+','+(p[1]*ys).toFixed(3)).join('\n'); };
+const csvCell=v=>{ const s=String(v); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; };
+const n3=v=>isFinite(v)?(+v).toFixed(3):'';
+function download(name,text){
+  const blob=new Blob([text],{type:'text/csv;charset=utf-8'}), url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },600);
+}
+async function copyText(s){
+  try{ await navigator.clipboard.writeText(s); return true; }catch(e){
+    const ta=document.createElement('textarea'); ta.value=s; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+    let ok=false; try{ ok=document.execCommand('copy'); }catch(_){} ta.remove(); return ok;
   }
-  document.getElementById('radiusChecks').innerHTML = radiusHtml;
-
-  // --- Check 2: minimum cover depth ---
-  const coverByDia = Dm>0 ? 5*Dm : NaN;
-  const coverMin = Dm>0 ? Math.max(coverByDia, 4.6) : NaN;
-  document.getElementById('coverByDia').textContent = isFinite(coverByDia) ? fmt(coverByDia)+' m' : '—';
-  document.getElementById('coverMinOut').textContent = isFinite(coverMin) ? fmt(coverMin)+' m' : '—';
-
-  const H1 = num('entryElev'), H2 = num('exitElev');
-  let coverHtml = '';
-  if(isFinite(coverMin)){
-    coverHtml += checkRow('Entry depth on Profile tab', H1, coverMin, 'm');
-    coverHtml += checkRow('Exit depth on Profile tab', H2, coverMin, 'm');
-  }
-  document.getElementById('coverChecks').innerHTML = coverHtml;
 }
+function metaLines(M){ const t=TYPES[ST.type]; return [`# HDD Profile Studio — ${t.name}`,`# HDD length ${n3(M.P.total)} m; plan distance ${n3(M.P.TPD)} m`+(M.obs?`; entry setback ${n3(M.S1)} m; exit setback ${n3(M.S2)} m`:'')]; }
 
-/* ============================ Persistence ============================ */
-const KEY='hdd-profile-inputs-v1';
-function save(p){ try{ localStorage.setItem(KEY, JSON.stringify(p)); }catch(e){} }
-function load(){
+/* ============================ Views, theme, drawer ============================ */
+function setView(v){
+  ST.view=v;
+  $$('#mainNav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  const design=v==='basic'||v==='advanced';
+  $('#designView').classList.toggle('hidden',!design);
+  $('#checksView').classList.toggle('hidden',v!=='checks');
+  $('#infoView').classList.toggle('hidden',v!=='info');
+  $('#basicOut').classList.toggle('hidden',v!=='basic');
+  $('#advOut').classList.toggle('hidden',v!=='advanced');
+  if(v==='checks'){ $('#c_od').value=ST.chk.od; $('#c_fos').value=ST.chk.fos; }
+  if(design) renderForm();
+  renderAll();
+}
+function setType(t){
+  if(!TYPES[t]) return;
+  ST.type=t;
+  const empty=!Object.keys(ST.per[t]||{}).some(k=>String(ST.per[t][k]).trim()!=='');
+  if(empty){ loadExample(t); toast(`Example values loaded for ${TYPES[t].name}. Edit as needed.`); }
+  renderCross(); renderForm(); renderAll();
+}
+function setUnit(u){
+  if(u===ST.unit) return;
+  ['ang1','ang2'].forEach(id=>{ const v=Number(ST.common[id]); if(String(ST.common[id]).trim()!==''&&isFinite(v)) ST.common[id]=trimNum(u==='pct'?toPct(v):fromPct(v)); });
+  ST.unit=u; renderForm(); renderAll();
+}
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  $$('[data-theme-set]').forEach(b=>b.classList.toggle('on',b.getAttribute('data-theme-set')===t));
+  const tc={light:'#edf2f9',dark:'#070d1a',hc:'#000000'}[t];
+  $('meta[name="theme-color"]').setAttribute('content',tc);
+  try{ localStorage.setItem(THEME_KEY,t); }catch(e){}
+}
+function openDrawer(on){
+  $('#drawer').classList.toggle('open',on); $('#scrim').classList.toggle('open',on);
+  $('#drawer').setAttribute('aria-hidden',on?'false':'true'); $('#btnMenu').setAttribute('aria-expanded',on?'true':'false');
+}
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('on'),2600); }
+const appUrl=()=>location.href.split('#')[0];
+async function shareLink(url,title){
+  if(navigator.share){ try{ await navigator.share({title,url}); return; }catch(e){ if(e&&e.name==='AbortError') return; } }
+  toast(await copyText(url)?'Link copied to clipboard':'Copy failed — link: '+url);
+}
+function designUrl(){
+  const d={t:ST.type,u:ST.unit,v:ST.view==='advanced'?'advanced':'basic',c:ST.common,p:ST.per[ST.type]};
+  return appUrl()+'#d='+btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+}
+function readHash(){
+  const m=location.hash.match(/[#&]d=([^&]+)/); if(!m) return false;
   try{
-    const s=localStorage.getItem(KEY); if(!s) return;
-    const p=JSON.parse(s);
-    for(const k in p){ const el=document.getElementById(k); if(el && isFinite(p[k])) el.value=p[k]; }
-  }catch(e){}
+    const d=JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+    if(!d||!TYPES[d.t]) return false;
+    ST.type=d.t; if(d.u==='pct'||d.u==='deg') ST.unit=d.u; if(d.v==='advanced'||d.v==='basic') ST.view=d.v;
+    ST.common=Object.assign({ang1:'',ang2:'',R1:'',R2:'',rodL:'',rod1:''},cleanMap(d.c,COMMON_KEYS));
+    ST.per[d.t]=cleanMap(d.p,PER_KEYS);
+    history.replaceState(null,'',location.pathname+location.search);
+    return true;
+  }catch(e){ return false; }
 }
 
 /* ============================ Wiring ============================ */
-const EXAMPLE={entryAngle:6,exitAngle:6,entryElev:6,exitElev:6,R1:900,R2:900,tpd:1500};
-function setVals(o){ for(const k in o){ const el=document.getElementById(k); if(el) el.value=o[k]; } }
-
-document.addEventListener('input',()=>{ render(); renderChecks(); });
-document.getElementById('btnExample').addEventListener('click',()=>{ setVals(EXAMPLE); render(); renderChecks(); });
-document.getElementById('btnReset').addEventListener('click',()=>{
-  ['entryAngle','exitAngle','entryElev','exitElev','R1','R2','tpd'].forEach(id=>document.getElementById(id).value='');
-  render(); renderChecks();
+$('#fgrid').addEventListener('input',e=>{ const id=e.target.getAttribute('data-id'); if(!id) return; setRaw(id,e.target.value); renderAll(); });
+$('#crossList').addEventListener('change',e=>{ if(e.target.name==='xtype') setType(e.target.value); });
+$$('.useg button').forEach(b=>b.addEventListener('click',()=>setUnit(b.dataset.unit)));
+$$('#mainNav button').forEach(b=>b.addEventListener('click',()=>{ setView(b.dataset.view); }));
+$$('[data-go]').forEach(b=>b.addEventListener('click',()=>{ openDrawer(false); setView(b.getAttribute('data-go')); window.scrollTo(0,0); }));
+$$('[data-theme-set]').forEach(b=>b.addEventListener('click',()=>applyTheme(b.getAttribute('data-theme-set'))));
+$('#btnMenu').addEventListener('click',()=>openDrawer(true));
+$('#drClose').addEventListener('click',()=>openDrawer(false));
+$('#scrim').addEventListener('click',()=>openDrawer(false));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') openDrawer(false); });
+$('#btnExample').addEventListener('click',()=>{ loadExample(ST.type); renderForm(); renderAll(); toast('Example loaded'); });
+$('#btnClear').addEventListener('click',()=>{ Object.keys(ST.common).forEach(k=>ST.common[k]=''); ST.per[ST.type]={}; renderForm(); renderAll(); });
+$('#btnShareTop').addEventListener('click',()=>shareLink(appUrl(),'HDD Profile Studio'));
+$('#drShareApp').addEventListener('click',()=>{ openDrawer(false); shareLink(appUrl(),'HDD Profile Studio'); });
+$('#drShareDesign').addEventListener('click',()=>{ openDrawer(false); shareLink(designUrl(),'HDD design — '+TYPES[ST.type].name); });
+$('#drPrint').addEventListener('click',()=>{ openDrawer(false); setTimeout(()=>window.print(),250); });
+$('#fpill').addEventListener('click',()=>{
+  if(ST.view!=='basic'&&ST.view!=='advanced'){ setView('basic'); window.scrollTo(0,0); return; }
+  const v=$('#verdict'), top=v.getBoundingClientRect().top+window.scrollY-12;
+  window.scrollTo({top:window.scrollY<top-40?top:0,behavior:'smooth'});
 });
-
-// tabs
-document.querySelectorAll('nav.tabs button').forEach(b=>{
-  b.addEventListener('click',()=>{
-    document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    document.getElementById('view-'+b.dataset.view).classList.add('active');
-    window.scrollTo({top:0,behavior:'instant'});
+/* checks inputs */
+$('#c_od').addEventListener('input',e=>{ ST.chk.od=e.target.value; renderAll(); });
+$('#c_fos').addEventListener('input',e=>{ ST.chk.fos=e.target.value; renderAll(); });
+/* stations & exports */
+$('#dxIn').addEventListener('input',e=>{ ST.dx=e.target.value; if(CUR&&CUR.P&&!CUR.fail.length) renderStations(CUR); save(); });
+[['#ysIn','#ysIn2'],['#ysIn2','#ysIn']].forEach(([a,o])=>$(a).addEventListener('input',e=>{ ST.ys=e.target.value; $(o).value=ST.ys; save(); }));
+$('#btnPlineB').addEventListener('click',async()=>{ if(!CUR||!CUR.P) return; toast(await copyText(pline(denseBore(CUR)))?'AutoCAD points copied — type PLINE, then paste':'Copy failed'); });
+$('#btnCsvB').addEventListener('click',()=>{
+  if(!CUR||!CUR.P) return;
+  const rows=stationRows(CUR), L=metaLines(CUR);
+  L.push('Point,Station_m,Elevation_m,Depth_below_entry_m,Ground_m,Cover_m,Pitch_pct,Pitch_deg');
+  rows.forEach(r=>L.push([csvCell(r.lab),n3(r.x),n3(r.z),n3(r.d),n3(r.gr),n3(r.cov),n3(toPct(r.pd)),n3(r.pd)].join(',')));
+  download('hdd-stations.csv',L.join('\n'));
+});
+$('#btnPlineA').addEventListener('click',async()=>{ if(!CUR||!CUR.rods) return; toast(await copyText(pline(CUR.rods.map(r=>[r.x,r.z])))?'Rod-by-rod points copied — type PLINE, then paste':'Copy failed'); });
+$('#btnPlineAct').addEventListener('click',async()=>{ if(!CUR||!CUR.act||CUR.act.length<2){ toast('No as-drilled readings yet'); return; } toast(await copyText(pline(CUR.act.map(a=>[a.x,a.z])))?'As-drilled points copied':'Copy failed'); });
+$('#btnCsvA').addEventListener('click',()=>{
+  if(!CUR||!CUR.rods) return;
+  const M=CUR, L=metaLines(M), tr=ST.adv.track&&M.act;
+  L.push('Rod,Length_m,MD_m,Section,Pitch_pct,Pitch_deg,Inclination_deg,Delta_pitch_deg,Delta_away_m,Away_m,Depth_below_entry_m,Elevation_m,Ground_m,Cover_m,Location'+(tr?',Reading,Actual_away_m,Actual_elev_m,Delta_elev_m,Actual_cover_m':''));
+  M.rods.forEach((r,i)=>{
+    let row=[r.k===0?'Entry':r.k,n3(r.L),n3(r.m),SECL[r.sec],n3(toPct(r.pd)),n3(r.pd),n3(90+r.pd),r.k?n3(r.dp):'',r.k?n3(r.dx):'',n3(r.x),n3(r.d),n3(r.z),n3(r.gr),n3(r.cov),csvCell(r.loc)];
+    if(tr){ const a=M.act[i]; row=row.concat([csvCell(ST.adv.readings[r.k]||''),a?n3(a.x):'',a?n3(a.z):'',a?n3(a.z-r.z):'',a?n3(M.groundAt(a.x)-a.z):'']); }
+    L.push(row.join(','));
   });
+  download('hdd-rod-plan.csv',L.join('\n'));
 });
+/* as-drilled */
+$('#trkOn').addEventListener('change',e=>{ ST.adv.track=e.target.checked; renderAll(); });
+$('#trkFmt').addEventListener('change',e=>{ ST.adv.fmt=e.target.value; renderAll(); });
+const trkRefresh=()=>{ if(!CUR||!CUR.rods) return; updateActual(CUR); drawPlot($('#svgA'),CUR,'adv'); legend($('#legA'),CUR,'adv'); save(); };
+$('#trkTie').addEventListener('input',e=>{ ST.adv.tie=e.target.value; trkRefresh(); });
+$('#trkTol').addEventListener('input',e=>{ ST.adv.tol=e.target.value; trkRefresh(); });
+$('#trkClear').addEventListener('click',()=>{ ST.adv.readings={}; renderAll(); toast('Readings cleared'); });
+$('#rodTbl').addEventListener('input',e=>{ const k=e.target.getAttribute('data-k'); if(!k) return; ST.adv.readings[k]=e.target.value; trkRefresh(); });
+/* plot hover */
+['#svgB','#svgA'].forEach(id=>{ const svg=$(id);
+  svg.addEventListener('pointermove',e=>hoverAt(svg,e.clientX));
+  svg.addEventListener('pointerdown',e=>hoverAt(svg,e.clientX));
+  svg.addEventListener('pointerleave',()=>{ const h=svg.querySelector('.hov'); if(h) h.innerHTML=''; });
+});
+let rsz; window.addEventListener('resize',()=>{ clearTimeout(rsz); rsz=setTimeout(drawVisible,120); });
+/* print on a light page */
+let prevTheme=null;
+window.addEventListener('beforeprint',()=>{ prevTheme=document.documentElement.getAttribute('data-theme'); document.documentElement.setAttribute('data-theme','light'); });
+window.addEventListener('afterprint',()=>{ if(prevTheme) document.documentElement.setAttribute('data-theme',prevTheme); });
 
-// service worker (silent — full offline caching, no install prompt UI)
-if('serviceWorker' in navigator){
+/* service worker: offline support on the hosted site (skipped on localhost so edits show immediately) */
+if('serviceWorker' in navigator&&location.protocol==='https:'){
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 }
 
-// init
-initTheme();
-load(); render(); renderChecks();
+/* ============================ Init ============================ */
+applyTheme(document.documentElement.getAttribute('data-theme')||'dark');
+const had=load();
+const fromLink=readHash();
+if(!had&&!fromLink) loadExample(ST.type);
+$('#dxIn').value=ST.dx; $('#ysIn').value=ST.ys; $('#ysIn2').value=ST.ys;
+renderCross();
+setView(ST.view);
+if(fromLink) toast('Shared design loaded');
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(drawVisible);
+})();
 </script>
 </body>
 </html>

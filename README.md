@@ -1,50 +1,56 @@
 # HDD Profile Studio
 
-An **offline** calculator for **Horizontal Directional Drilling (HDD)** crossing profiles. It reproduces the geometry from your `crossing_profile_geometry_calculator.xlsx` — segment lengths, node coordinates, depths, total pipe length — and tells you at a glance whether a profile is **feasible**. It also checks your design against two common HDD rules of thumb: minimum bend radius and minimum cover depth.
+**Open the app:** https://ashuchaudhari58-cyber.github.io/HDD_profile_geometry_calculator/
 
-Built as a self-contained Progressive Web App: one folder, no internet, no install server required. See **[BUILD-APK.md](BUILD-APK.md)** to put it on your phone or package it as an `.apk`.
+A web app for designing **Horizontal Directional Drilling (HDD)** crossings. Share the link above with anyone. It runs in any modern browser on phone, tablet or desktop, needs no install or login, and does all calculation on the device.
 
 ## What it does
 
-- **5-segment profile model** A→B→C→D→E→F: entry tangent, entry curve, horizontal bottom, exit curve, exit tangent.
-- **Separate entry / exit radii** (R1, R2) — not just a single shared ROC.
-- **Live profile diagram** with ground surface, curves vs. tangents, depth grid, node markers and automatic vertical exaggeration.
-- **Feasibility check** — flags any section that goes negative and tells you *why* and *by how much* (e.g. minimum plan distance or minimum entry depth required).
-- **Setting-out table** — chainage X and depth for every node A–F.
-- **Checks tab**: minimum bend radius (R ≥ 1000 × OD × FOS, with your Profile tab's R1/R2 checked against it) and minimum cover depth (≥ 5 × OD, floored at 4.6 m, checked against your entry/exit depths), each with a short citation.
-- **Light / dark theme toggle**, remembered per device.
-- Inputs are remembered on-device between sessions.
+**Crossing types.** River, Road / Highway, Railway, Canal / Drain / Nala, or Open Ground. The input form and the profile drawing change to match the type (water and scoured bed, road on embankment, ballast and rails, lined canal).
 
-## Inputs (metric, matching the spreadsheet)
+**Setback from cover (river, canal, road, rail).** Give the obstacle width, the bed depth (plus side slope and scour) and the **minimum cover**. The app then works out:
+- the design bottom elevation, and
+- the **minimum entry and exit setback** from the bank / road edge at which the bore stays on or below the min-cover line under the banks and the bed.
 
-| Input | Symbol | Unit |
-|---|---|---|
-| Entry angle | θ1 | ° |
-| Exit angle | θ2 | ° |
-| Entry depth to bore | H1 | m |
-| Exit depth to bore | H2 | m |
-| Entry radius of curvature | R1 | m |
-| Exit radius of curvature | R2 | m |
-| Total plan distance | TPD | m |
+Fix a setback yourself when the rig position is set by the site, and the cover check flags any shallow point.
+
+**Basic page.** The 5-segment profile A→B→C→D→E→F (entry tangent, entry curve, bottom run, exit curve, exit tangent), a feasibility check, segment lengths, key dimensions, a cover check at the banks / toes / centre, node coordinates, a station–elevation table at any interval, and an AutoCAD `PLINE` point export.
+
+**Advanced page (rod-by-rod).** The same inputs plus the rod length, and an optional first rod / tooling length. For every rod it gives:
+- MD, pitch (% and °), inclination from vertical and Δ pitch per rod
+- away distance, depth below entry, elevation and cover
+- section and location
+
+It also produces a drilling programme ("rod 11: entry curve starts, steer ≈ 1.09°/rod"), CSV download and AutoCAD export. You can **log as-drilled readings** (% pitch, ° pitch or ° inclination). They are computed by the average-angle method and compared against the plan, with an alarm when the bore goes off plan.
+
+**Checks page.** Minimum bend radius (1000 × OD × FOS), minimum cover (max of 5 × OD and 4.6 m) and steering per rod, each checked live against the design.
+
+**Other features:**
+- % or ° angle entry
+- Light / Dark / High Contrast themes
+- "Share this design" link that carries your inputs
+- Print / save as PDF
 
 ## Verification
 
-The engine matches the source spreadsheet exactly. Example (θ=6°, H=6 m, R=900 m, TPD=1500 m):
-
-| Section | This app | Spreadsheet |
+| Case | This app | Source sheet |
 |---|---|---|
-| AB entry tangent | 10.2336 | 10.2336 |
-| BC entry curve | 94.2478 | 94.2478 |
-| CD bottom run | 1291.4936 | 1291.4936 |
-| DE exit curve | 94.2478 | 94.2478 |
-| EF exit tangent | 10.2336 | 10.2336 |
-| **AF HDD length** | **1500.4564** | **1500.4564** |
+| θ 6°, H 6 m, R 900 m, TPD 1500 m | HDD length 1500.4564 | crossing_profile_geometry_calculator.xlsx: 1500.4564 |
+| 10°/8°, R 3600, elev 47.1 / −30 / 44.6, 1900 horizontal | PC1 127.08, PT1 752.22, PC2 1117.46, PT2 1618.48, length 1909.54 | Automated HDD profile calc.xlsx: same |
+| Degrees per 31.5 joint at R 3600 | 0.501° | Automated HDD profile calc.xlsx: 0.50134° |
+| As-drilled 1 m @ 83° inc, then 9.55 m @ 82.89 / 82.94 / 82.91 | away / TVD 10.47 −1.29, 19.95 −2.47, 29.42 −3.65 | HDD_Pilot_Master_Sheet-Rev2.xlsx (average-angle): same |
 
-## Roadmap
+## Files
 
-- **v1 (this):** geometry / profile module.
-- **v2 (planned):** structural design module porting `Design Calculation.xlsx` — pull force, hoop / longitudinal / bending / combined stresses, collapse & overburden, coating check, roller spacing, ROC limits, rig-capacity checks (ASME B31.4).
+- `index.html`: the whole app (HTML, CSS and JavaScript in one file)
+- `sw.js`: network-first service worker (always serves the latest version and keeps a copy for use offline on site)
+- `manifest.webmanifest`, `icons/`: install-to-home-screen support
+- `BUILD-APK.md`: optional notes for wrapping the site as an Android app
 
-## License / privacy
+## Updating the live site
 
-Runs entirely on your device. No network calls, no analytics, no data collection.
+The site is served by GitHub Pages from the `main` branch. Commit and push changes to `main`, and the link updates within a minute or two.
+
+## Disclaimer
+
+Planning aid only. The final design must be checked and approved by a qualified engineer.

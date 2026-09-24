@@ -1,13 +1,13 @@
 {
   "name": "HDD Profile Studio",
   "short_name": "HDD Profile",
-  "description": "Offline Horizontal Directional Drilling crossing-profile geometry calculator.",
+  "description": "HDD crossing profile designer — river, road, railway and canal crossings, minimum setback from cover, and a rod-by-rod drilling plan.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#010102",
-  "theme_color": "#010102",
+  "background_color": "#070d1a",
+  "theme_color": "#070d1a",
   "categories": ["utilities", "productivity", "engineering"],
   "icons": [
     { "src": "icons/LOGO.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },

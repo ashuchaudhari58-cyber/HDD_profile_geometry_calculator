@@ -1,10 +1,11 @@
-/* HDD Profile Studio — offline service worker */
-const CACHE = 'hdd-profile-v2';
+/* HDD Profile Studio — service worker.
+   Network-first: anyone opening the shared link always gets the latest version,
+   and the last copy seen is kept for use offline on site. */
+const CACHE = 'hdd-studio-v3';
 const ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './icons/LOGO.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png'
@@ -24,17 +25,20 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Cache-first: everything is local, so this makes the app fully offline.
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
+  const req = e.request;
+  if (req.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(hit => {
-      if (hit) return hit;
-      return fetch(e.request).then(res => {
+    fetch(req).then(res => {
+      if (res && (res.ok || res.type === 'opaque')) {
         const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
-        return res;
-      }).catch(() => caches.match('./index.html'));
-    })
+        caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
+      }
+      return res;
+    }).catch(() =>
+      caches.match(req, { ignoreSearch: true }).then(hit =>
+        hit || (req.mode === 'navigate' ? caches.match('./index.html') : undefined)
+      )
+    )
   );
 });
